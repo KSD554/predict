@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Prédiction Médicale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .mobile-menu {
+                display: none;
+            }
+            .mobile-menu.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-md">
+            <nav class="container mx-auto px-4 sm:px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-heartbeat text-red-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-800">MediPredict</span>
+                    </div>
+                    <!-- Menu Mobile -->
+                    <button @click="toggleMenu" class="md:hidden text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                    <!-- Menu Desktop -->
+                    <div class="hidden md:flex space-x-8">
+                        <a href="#" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
+                        <a href="#about" class="text-gray-600 hover:text-blue-600 transition">À propos</a>
+                        <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Contact</a>
+                    </div>
+                </div>
+                <!-- Menu Mobile Déroulant -->
+                <div v-show="isMobileMenuOpen" class="md:hidden mt-4 py-2 space-y-4" v-cloak>
+                    <a href="#" class="block text-gray-600 hover:text-blue-600 transition py-2">Accueil</a>
+                    <a href="#about" class="block text-gray-600 hover:text-blue-600 transition py-2">À propos</a>
+                    <a href="#contact" class="block text-gray-600 hover:text-blue-600 transition py-2">Contact</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-12 sm:py-20">
+            <div class="container mx-auto px-4 sm:px-6">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/2 mb-8 md:mb-0 text-center md:text-left">
+                        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Prédiction des Risques de Santé</h1>
+                        <p class="text-lg sm:text-xl mb-8">Utilisez l'intelligence artificielle pour évaluer vos risques de santé et obtenir des recommandations personnalisées.</p>
+                        <a href="#prediction" class="inline-block bg-white text-blue-600 px-6 sm:px-8 py-3 rounded-full font-semibold hover:bg-blue-50 transition">Commencer l'évaluation</a>
+                    </div>
+                    <div class="md:w-1/2 flex justify-center">
+                        <i class="fas fa-user-md text-6xl sm:text-8xl opacity-90"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Prediction Section -->
+        <section id="prediction" class="py-12 sm:py-16">
+            <div class="container mx-auto px-4 sm:px-6">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-800">Évaluation des Risques</h2>
+                
+                <!-- Messages de notification -->
+                <div v-if="notification.show" :class="['mb-6 p-4 rounded-lg text-white text-center transition-all', 
+                    notification.type === 'success' ? 'bg-green-500' : 'bg-red-500']"
+                    v-cloak>
+                    <span v-text="notification.message"></span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    <!-- Carte Diabète -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-chart-line text-blue-600 text-2xl mr-3"></i>
+                            <h3 class="text-xl font-semibold text-gray-800">Diabète</h3>
+                        </div>
+                        <form @submit.prevent="predict('diabetes', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="glucose">
+                                    Glycémie (mg/dL)
+                                </label>
+                                <input v-model="formData.diabetes.glucose"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="70"
+                                       max="400"
+                                       step="1">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                                    Âge
+                                </label>
+                                <input v-model="formData.diabetes.age"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="18"
+                                       max="120">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="bmi">
+                                    IMC
+                                </label>
+                                <input v-model="formData.diabetes.bmi"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="15"
+                                       max="50"
+                                       step="0.1">
+                            </div>
+                            <button type="submit"
+                                    :disabled="isLoading"
+                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <span v-if="!isLoading">Analyser</span>
+                                <span v-else>
+                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Carte Hypertension -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-heart-pulse text-red-600 text-2xl mr-3"></i>
+                            <h3 class="text-xl font-semibold text-gray-800">Hypertension</h3>
+                        </div>
+                        <form @submit.prevent="predict('hypertension', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="systolic">
+                                    Pression Systolique (mmHg)
+                                </label>
+                                <input v-model="formData.hypertension.systolic"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="90"
+                                       max="200">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="diastolic">
+                                    Pression Diastolique (mmHg)
+                                </label>
+                                <input v-model="formData.hypertension.diastolic"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="60"
+                                       max="120">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                                    Âge
+                                </label>
+                                <input v-model="formData.hypertension.age"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="18"
+                                       max="120">
+                            </div>
+                            <button type="submit"
+                                    :disabled="isLoading"
+                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <span v-if="!isLoading">Analyser</span>
+                                <span v-else>
+                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Carte Maladies Cardiovasculaires -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-heartbeat text-purple-600 text-2xl mr-3"></i>
+                            <h3 class="text-xl font-semibold text-gray-800">Cardiovasculaire</h3>
+                        </div>
+                        <form @submit.prevent="predict('cardiovascular', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="heart_rate">
+                                    Fréquence Cardiaque (bpm)
+                                </label>
+                                <input v-model="formData.cardiovascular.heart_rate"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="40"
+                                       max="120">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="cholesterol">
+                                    Cholestérol (mg/dL)
+                                </label>
+                                <input v-model="formData.cardiovascular.cholesterol"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="100"
+                                       max="300">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                                    Âge
+                                </label>
+                                <input v-model="formData.cardiovascular.age"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="18"
+                                       max="120">
+                            </div>
+                            <button type="submit"
+                                    :disabled="isLoading"
+                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <span v-if="!isLoading">Analyser</span>
+                                <span v-else>
+                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Résultats -->
+                <div v-if="prediction" class="mt-8 sm:mt-12 bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-2xl mx-auto" v-cloak>
+                    <h3 class="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center text-gray-800">Résultats de l'Analyse</h3>
+                    
+                    <!-- Niveau de Risque -->
+                    <div class="mb-6 sm:mb-8">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+                            <h4 class="text-lg font-medium text-gray-700 mb-4 sm:mb-0">Niveau de Risque :</h4>
+                            <div :class="['px-4 py-2 rounded-full text-white font-medium', 
+                                prediction.risk_level === 'Élevé' ? 'bg-red-500' : 
+                                prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500']">
+                                [[ prediction.risk_level ]]
+                            </div>
+                        </div>
+
+                        <!-- Description du Risque -->
+                        <div class="text-gray-600 mb-6 text-base sm:text-lg">
+                            [[ prediction.risk_description ]]
+                        </div>
+
+                        <!-- Probabilité -->
+                        <div class="mb-6">
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div :class="[
+                                    'h-full rounded-full transition-all duration-500',
+                                    prediction.risk_level === 'Élevé' ? 'bg-red-500' :
+                                    prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500'
+                                ]" :style="{ width: prediction.probability + '%' }"></div>
+                            </div>
+                            <div class="text-center text-sm text-gray-600 mt-2">
+                                Probabilité : [[ prediction.probability ]]%
+                            </div>
+                        </div>
+
+                        <!-- Facteurs de Risque -->
+                        <div v-if="prediction.risk_factors && prediction.risk_factors.length" class="mb-6">
+                            <h4 class="font-semibold mb-4 text-lg text-gray-800">Facteurs de Risque Identifiés</h4>
+                            <div class="space-y-4">
+                                <div v-for="factor in prediction.risk_factors" :key="factor.name" 
+                                     :class="[
+                                         'p-4 rounded-lg',
+                                         factor.severity === 'high' ? 'bg-red-50' :
+                                         factor.severity === 'medium' ? 'bg-yellow-50' : 'bg-green-50'
+                                     ]">
+                                    <h5 class="font-medium mb-2"
+                                        :class="[
+                                            factor.severity === 'high' ? 'text-red-700' :
+                                            factor.severity === 'medium' ? 'text-yellow-700' : 'text-green-700'
+                                        ]">
+                                        [[ factor.name ]]
+                                    </h5>
+                                    <p class="text-gray-600">[[ factor.description ]]</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="mt-6">
+                            <button type="button"
+                                    @click="resetAll"
+                                    class="mb-4 block w-full bg-blue-500 hover:bg-blue-600 text-white text-center py-3 px-4 rounded-lg cursor-pointer">
+                                Nouvelle analyse
+                            </button>
+                            <button type="button"
+                                    v-if="prediction"
+                                    @click="downloadReport"
+                                    class="block w-full bg-green-500 hover:bg-green-600 text-white text-center py-3 px-4 rounded-lg cursor-pointer">
+                                <span class="flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Télécharger le PDF
+                                </span>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- Recommandations -->
+                    <div v-if="prediction && prediction.recommendations" class="bg-blue-50 rounded-lg p-4 sm:p-6">
+                        <h4 class="font-semibold mb-3 text-lg text-blue-800">Plan d'Action Recommandé</h4>
+                        <div class="space-y-6">
+                            <div v-for="(rec, index) in prediction.recommendations" :key="index" class="text-sm sm:text-base">
+                                <h5 class="font-medium text-blue-700 mb-3">[[ rec.title ]]</h5>
+                                <ul class="list-disc list-inside space-y-2 text-gray-600 ml-4">
+                                    <li v-for="(item, itemIndex) in rec.items" :key="itemIndex" class="leading-relaxed">
+                                        [[ item ]]
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-16 bg-gray-100">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">À Propos</h2>
+                <div class="max-w-3xl mx-auto text-center">
+                    <p class="text-lg text-gray-600 mb-8">
+                        Notre système utilise des algorithmes d'intelligence artificielle avancés pour évaluer les risques de santé 
+                        et fournir des recommandations personnalisées basées sur vos données médicales.
+                    </p>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow">
+                            <i class="fas fa-brain text-blue-600 text-3xl mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">IA Avancée</h3>
+                            <p class="text-gray-600">Algorithmes de machine learning pour des prédictions précises</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow">
+                            <i class="fas fa-shield-alt text-blue-600 text-3xl mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">Sécurisé</h3>
+                            <p class="text-gray-600">Vos données sont traitées de manière confidentielle</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow">
+                            <i class="fas fa-chart-bar text-blue-600 text-3xl mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">Précis</h3>
+                            <p class="text-gray-600">Résultats basés sur des données médicales validées</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-16">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Contact</h2>
+                <div class="max-w-lg mx-auto bg-white rounded-xl shadow-lg p-8">
+                    <form class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                            <input type="text" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                            <textarea class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+                            Envoyer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-8">
+            <div class="container mx-auto px-6 text-center">
+                <p>&copy; 2025 MediPredict. Tous droits réservés.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    isMobileMenuOpen: false,
+                    activeTab: 'prediction',
+                    isLoading: false,
+                    lastPredictionType: null,
+                    notification: {
+                        show: false,
+                        message: '',
+                        type: 'success'
+                    },
+                    history: [],
+                    statistics: null,
+                    prediction: null,
+                    formData: {
+                        diabetes: {
+                            glucose: '',
+                            age: '',
+                            bmi: ''
+                        },
+                        hypertension: {
+                            systolic: '',
+                            diastolic: '',
+                            age: ''
+                        },
+                        cardiovascular: {
+                            heart_rate: '',
+                            cholesterol: '',
+                            age: ''
+                        }
+                    }
+                }
+            },
+            mounted() {
+                this.loadHistory()
+                this.loadStatistics()
+            },
+            methods: {
+                showNotification(message, type = 'success') {
+                    this.notification = {
+                        show: true,
+                        type: type,
+                        message: message
+                    }
+                    setTimeout(() => {
+                        this.notification.show = false
+                    }, 5000)
+                },
+                async loadHistory() {
+                    try {
+                        const response = await fetch('/history')
+                        if (response.ok) {
+                            this.history = await response.json()
+                        } else {
+                            throw new Error('Erreur lors du chargement de l\'historique')
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error)
+                        this.showNotification('Erreur lors du chargement de l\'historique', 'error')
+                    }
+                },
+                async loadStatistics() {
+                    try {
+                        const response = await fetch('/statistics')
+                        if (response.ok) {
+                            this.statistics = await response.json()
+                        } else {
+                            throw new Error('Erreur lors du chargement des statistiques')
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error)
+                        this.showNotification('Erreur lors du chargement des statistiques', 'error')
+                    }
+                },
+                async predict(diseaseType, event) {
+                    if (event) {
+                        event.preventDefault()
+                    }
+                    
+                    this.isLoading = true
+                    this.lastPredictionType = diseaseType
+                    this.prediction = null
+                    
+                    try {
+                        const formData = this.formData[diseaseType]
+                        console.log('Envoi des données:', { disease_type: diseaseType, data: formData })
+                        
+                        const response = await axios.post('/predict', {
+                            disease_type: diseaseType,
+                            data: formData
+                        })
+                        
+                        console.log('Réponse du serveur:', response.data)
+                        
+                        if (response.data.error) {
+                            this.showNotification(response.data.error, 'error')
+                        } else {
+                            this.prediction = response.data
+                            console.log('Données de prédiction:', this.prediction)
+                            console.log('Recommandations:', this.prediction.recommendations)
+                            this.showNotification('Prédiction effectuée avec succès', 'success')
+                            // Mise à jour de l'historique
+                            this.loadHistory()
+                        }
+                    } catch (error) {
+                        console.error('Erreur complète:', error)
+                        const errorMessage = error.response?.data?.error || 'Erreur lors de la prédiction'
+                        this.showNotification(errorMessage, 'error')
+                    } finally {
+                        this.isLoading = false
+                    }
+                },
+                async downloadReport() {
+                    try {
+                        const response = await axios.get(`/download_report/${this.lastPredictionType}`, {
+                            responseType: 'blob'
+                        });
+                        
+                        const blob = new Blob([response.data], { type: 'application/pdf' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `rapport_${this.lastPredictionType}_${new Date().toISOString().split('T')[0]}.pdf`;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        
+                        this.showNotification('Rapport PDF téléchargé avec succès', 'success');
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        this.showNotification('Erreur lors du téléchargement du rapport', 'error');
+                    }
+                },
+                async generateReport(predictionData) {
+                    try {
+                        const response = await axios.post('/generate_report', predictionData, {
+                            responseType: 'blob'
+                        })
+                        
+                        // Créer un URL pour le blob
+                        const url = window.URL.createObjectURL(new Blob([response.data]))
+                        
+                        // Créer un lien temporaire pour le téléchargement
+                        const link = document.createElement('a')
+                        link.href = url
+                        link.setAttribute('download', `rapport_medical_${new Date().toISOString().split('T')[0]}.pdf`)
+                        document.body.appendChild(link)
+                        
+                        // Déclencher le téléchargement
+                        link.click()
+                        
+                        // Nettoyer
+                        window.URL.revokeObjectURL(url)
+                        document.body.removeChild(link)
+                        
+                        this.showNotification('Rapport généré avec succès', 'success')
+                    } catch (error) {
+                        console.error('Erreur:', error)
+                        this.showNotification('Erreur lors de la génération du rapport', 'error')
+                    }
+                },
+                async generateStatisticsReport() {
+                    try {
+                        const response = await fetch('/statistics_report')
+                        
+                        if (response.ok) {
+                            const blob = await response.blob()
+                            const url = window.URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = 'rapport_statistique.pdf'
+                            document.body.appendChild(a)
+                            a.click()
+                            window.URL.revokeObjectURL(url)
+                            a.remove()
+                        } else {
+                            throw new Error('Erreur lors de la génération du rapport statistique')
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error)
+                        this.showNotification('Erreur lors de la génération du rapport statistique', 'error')
+                    }
+                },
+                newPrediction() {
+                    // Réinitialiser les données
+                    this.prediction = null;
+                    this.isLoading = false;
+                    this.formData = {
+                        diabetes: { glucose: '', age: '', bmi: '' },
+                        hypertension: { systolic: '', diastolic: '', age: '' },
+                        cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
+                    };
+                },
+                resetAll() {
+                    // Réinitialiser toutes les données
+                    this.prediction = null;
+                    this.lastPredictionType = '';
+                    this.isLoading = false;
+                    this.formData = {
+                        diabetes: { glucose: '', age: '', bmi: '' },
+                        hypertension: { systolic: '', diastolic: '', age: '' },
+                        cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
+                    };
+                    // Recharger la page pour un nouveau départ
+                    window.location.reload();
+                },
+                resetPrediction() {
+                    this.prediction = null;
+                    this.isLoading = false;
+                    this.formData = {
+                        diabetes: { glucose: '', age: '', bmi: '' },
+                        hypertension: { systolic: '', diastolic: '', age: '' },
+                        cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
+                    };
+                },
+                toggleMenu() {
+                    this.isMobileMenuOpen = !this.isMobileMenuOpen
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
