@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Système de Prédiction Médicale</title>
+    <title>MediPredict | Système de Prédiction Médicale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -36,7 +36,7 @@
                     <div class="hidden md:flex items-center space-x-8">
                         <a href="#" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
                         <a href="#about" class="text-gray-600 hover:text-blue-600 transition">À propos</a>
-                        <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Contact</a>
+                        <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Blog</a>
                         <template v-if="!isAuthenticated">
                             <button @click="showLoginModal = true" class="text-blue-600 hover:text-blue-800 font-medium">Connexion</button>
                             <button @click="showRegisterModal = true" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Inscription</button>
@@ -55,7 +55,7 @@
                 <div v-show="isMobileMenuOpen" class="md:hidden mt-4 py-2 space-y-4" v-cloak>
                     <a href="#" class="block text-gray-600 hover:text-blue-600 transition py-2">Accueil</a>
                     <a href="#about" class="block text-gray-600 hover:text-blue-600 transition py-2">À propos</a>
-                    <a href="#contact" class="block text-gray-600 hover:text-blue-600 transition py-2">Contact</a>
+                    <a href="#contact" class="block text-gray-600 hover:text-blue-600 transition py-2">Blog</a>
                     <template v-if="!isAuthenticated">
                         <button @click="showLoginModal = true" class="block w-full text-left text-blue-600 hover:text-blue-800 font-medium py-2">Connexion</button>
                         <button @click="showRegisterModal = true" class="block w-full text-left text-blue-600 hover:text-blue-800 font-medium py-2">Inscription</button>
