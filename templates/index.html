@@ -32,25 +32,110 @@
                         <i class="fas fa-heartbeat text-red-600 text-2xl mr-2"></i>
                         <span class="text-xl font-bold text-gray-800">MediPredict</span>
                     </div>
+                    <!-- Menu Desktop -->
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="#" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
+                        <a href="#about" class="text-gray-600 hover:text-blue-600 transition">À propos</a>
+                        <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Contact</a>
+                        <template v-if="!isAuthenticated">
+                            <button @click="showLoginModal = true" class="text-blue-600 hover:text-blue-800 font-medium">Connexion</button>
+                            <button @click="showRegisterModal = true" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Inscription</button>
+                        </template>
+                        <template v-else>
+                            <span class="text-gray-600">Bienvenue, [[ userName ]]</span>
+                            <a href="/logout" class="text-red-600 hover:text-red-800 font-medium">Déconnexion</a>
+                        </template>
+                    </div>
                     <!-- Menu Mobile -->
                     <button @click="toggleMenu" class="md:hidden text-gray-600 hover:text-blue-600">
                         <i class="fas fa-bars text-2xl"></i>
                     </button>
-                    <!-- Menu Desktop -->
-                    <div class="hidden md:flex space-x-8">
-                        <a href="#" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
-                        <a href="#about" class="text-gray-600 hover:text-blue-600 transition">À propos</a>
-                        <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Contact</a>
-                    </div>
                 </div>
                 <!-- Menu Mobile Déroulant -->
                 <div v-show="isMobileMenuOpen" class="md:hidden mt-4 py-2 space-y-4" v-cloak>
                     <a href="#" class="block text-gray-600 hover:text-blue-600 transition py-2">Accueil</a>
                     <a href="#about" class="block text-gray-600 hover:text-blue-600 transition py-2">À propos</a>
                     <a href="#contact" class="block text-gray-600 hover:text-blue-600 transition py-2">Contact</a>
+                    <template v-if="!isAuthenticated">
+                        <button @click="showLoginModal = true" class="block w-full text-left text-blue-600 hover:text-blue-800 font-medium py-2">Connexion</button>
+                        <button @click="showRegisterModal = true" class="block w-full text-left text-blue-600 hover:text-blue-800 font-medium py-2">Inscription</button>
+                    </template>
+                    <template v-else>
+                        <span class="block text-gray-600 py-2">Bienvenue, [[ userName ]]</span>
+                        <a href="/logout" class="block text-red-600 hover:text-red-800 font-medium py-2">Déconnexion</a>
+                    </template>
                 </div>
             </nav>
         </header>
+
+        <!-- Modal de Connexion -->
+        <div v-if="showLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" v-cloak>
+            <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold mb-6">Connexion</h2>
+                <form @submit.prevent="login">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                            Email
+                        </label>
+                        <input v-model="loginForm.email" type="email" id="email" required
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                            Mot de passe
+                        </label>
+                        <input v-model="loginForm.password" type="password" id="password" required
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Se connecter
+                        </button>
+                        <button type="button" @click="showLoginModal = false" class="text-gray-600 hover:text-gray-800">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal d'Inscription -->
+        <div v-if="showRegisterModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" v-cloak>
+            <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold mb-6">Inscription</h2>
+                <form @submit.prevent="register">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="reg-name">
+                            Nom
+                        </label>
+                        <input v-model="registerForm.name" type="text" id="reg-name" required
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="reg-email">
+                            Email
+                        </label>
+                        <input v-model="registerForm.email" type="email" id="reg-email" required
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="reg-password">
+                            Mot de passe
+                        </label>
+                        <input v-model="registerForm.password" type="password" id="reg-password" required
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            S'inscrire
+                        </button>
+                        <button type="button" @click="showRegisterModal = false" class="text-gray-600 hover:text-gray-800">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- Hero Section -->
         <section class="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-12 sm:py-20">
@@ -80,14 +165,34 @@
                     <span v-text="notification.message"></span>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Message pour les utilisateurs non connectés -->
+                <div v-if="!isAuthenticated" class="text-center py-8">
+                    <div class="bg-blue-50 rounded-lg p-8 max-w-2xl mx-auto">
+                        <i class="fas fa-lock text-blue-500 text-4xl mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Accès Restreint</h3>
+                        <p class="text-gray-600 mb-6">Pour accéder aux prédictions de santé, veuillez vous connecter ou créer un compte.</p>
+                        <div class="space-x-4">
+                            <button @click="showLoginModal = true" 
+                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                                Se connecter
+                            </button>
+                            <button @click="showRegisterModal = true" 
+                                    class="bg-white text-blue-600 border border-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50 transition">
+                                S'inscrire
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section de prédiction pour les utilisateurs connectés -->
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     <!-- Carte Diabète -->
                     <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
                         <div class="flex items-center mb-4">
                             <i class="fas fa-chart-line text-blue-600 text-2xl mr-3"></i>
                             <h3 class="text-xl font-semibold text-gray-800">Diabète</h3>
                         </div>
-                        <form @submit.prevent="predict('diabetes', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                        <form @submit.prevent="predict('diabetes')" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
                             <div class="mb-4">
                                 <label class="block text-gray-700 text-sm font-bold mb-2" for="glucose">
                                     Glycémie (mg/dL)
@@ -140,7 +245,7 @@
                             <i class="fas fa-heart-pulse text-red-600 text-2xl mr-3"></i>
                             <h3 class="text-xl font-semibold text-gray-800">Hypertension</h3>
                         </div>
-                        <form @submit.prevent="predict('hypertension', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                        <form @submit.prevent="predict('hypertension')" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
                             <div class="mb-4">
                                 <label class="block text-gray-700 text-sm font-bold mb-2" for="systolic">
                                     Pression Systolique (mmHg)
@@ -191,7 +296,7 @@
                             <i class="fas fa-heartbeat text-purple-600 text-2xl mr-3"></i>
                             <h3 class="text-xl font-semibold text-gray-800">Cardiovasculaire</h3>
                         </div>
-                        <form @submit.prevent="predict('cardiovascular', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                        <form @submit.prevent="predict('cardiovascular')" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
                             <div class="mb-4">
                                 <label class="block text-gray-700 text-sm font-bold mb-2" for="heart_rate">
                                     Fréquence Cardiaque (bpm)
@@ -363,31 +468,7 @@
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section id="contact" class="py-16">
-            <div class="container mx-auto px-6">
-                <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Contact</h2>
-                <div class="max-w-lg mx-auto bg-white rounded-xl shadow-lg p-8">
-                    <form class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
-                            <input type="text" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                            <textarea class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
-                            Envoyer
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </section>
+       
 
         <!-- Footer -->
         <footer class="bg-gray-800 text-white py-8">
@@ -405,6 +486,19 @@
             data() {
                 return {
                     isMobileMenuOpen: false,
+                    showLoginModal: false,
+                    showRegisterModal: false,
+                    isAuthenticated: '{{ is_authenticated }}' === 'true',
+                    userName: '{{ user_name }}',
+                    loginForm: {
+                        email: '',
+                        password: ''
+                    },
+                    registerForm: {
+                        name: '',
+                        email: '',
+                        password: ''
+                    },
                     activeTab: 'prediction',
                     isLoading: false,
                     lastPredictionType: null,
@@ -476,42 +570,56 @@
                         this.showNotification('Erreur lors du chargement des statistiques', 'error')
                     }
                 },
-                async predict(diseaseType, event) {
-                    if (event) {
-                        event.preventDefault()
+                async predict(diseaseType) {
+                    if (!this.isAuthenticated) {
+                        this.showNotification('Veuillez vous connecter pour faire une prédiction', 'error');
+                        this.showLoginModal = true;
+                        return;
                     }
-                    
-                    this.isLoading = true
-                    this.lastPredictionType = diseaseType
-                    this.prediction = null
-                    
+
                     try {
-                        const formData = this.formData[diseaseType]
-                        console.log('Envoi des données:', { disease_type: diseaseType, data: formData })
+                        this.isLoading = true;
+                        const formData = this.formData[diseaseType];
                         
-                        const response = await axios.post('/predict', {
+                        // Vérifier que toutes les valeurs sont présentes
+                        const hasEmptyValues = Object.values(formData).some(value => value === '');
+                        if (hasEmptyValues) {
+                            throw new Error('Veuillez remplir tous les champs');
+                        }
+
+                        // Convertir les valeurs en nombres
+                        const input_data = {};
+                        for (const [key, value] of Object.entries(formData)) {
+                            const numValue = parseFloat(value);
+                            if (isNaN(numValue)) {
+                                throw new Error(`La valeur pour ${key} n'est pas un nombre valide`);
+                            }
+                            input_data[key] = numValue;
+                        }
+
+                        // Créer l'objet de requête avec la structure correcte
+                        const requestData = {
                             disease_type: diseaseType,
-                            data: formData
-                        })
+                            input_data: input_data  // Utiliser input_data au lieu de data
+                        };
+
+                        console.log('Données à envoyer:', JSON.stringify(requestData));
+
+                        const response = await axios.post('/predict', requestData);
                         
-                        console.log('Réponse du serveur:', response.data)
-                        
-                        if (response.data.error) {
-                            this.showNotification(response.data.error, 'error')
+                        if (response.data.success) {
+                            this.prediction = response.data;
+                            this.lastPredictionType = diseaseType;
+                            this.showNotification('Prédiction effectuée avec succès', 'success');
+                            this.loadHistory();
                         } else {
-                            this.prediction = response.data
-                            console.log('Données de prédiction:', this.prediction)
-                            console.log('Recommandations:', this.prediction.recommendations)
-                            this.showNotification('Prédiction effectuée avec succès', 'success')
-                            // Mise à jour de l'historique
-                            this.loadHistory()
+                            throw new Error(response.data.message);
                         }
                     } catch (error) {
-                        console.error('Erreur complète:', error)
-                        const errorMessage = error.response?.data?.error || 'Erreur lors de la prédiction'
-                        this.showNotification(errorMessage, 'error')
+                        console.error('Erreur:', error);
+                        this.showNotification(error.response?.data?.message || error.message, 'error');
                     } finally {
-                        this.isLoading = false
+                        this.isLoading = false;
                     }
                 },
                 async downloadReport() {
@@ -618,6 +726,39 @@
                 },
                 toggleMenu() {
                     this.isMobileMenuOpen = !this.isMobileMenuOpen
+                },
+                async login() {
+                    try {
+                        const response = await axios.post('/login', this.loginForm);
+                        if (response.data.success) {
+                            this.showNotification(response.data.message, 'success');
+                            this.showLoginModal = false;
+                            window.location.reload();
+                        } else {
+                            this.showNotification(response.data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showNotification('Erreur lors de la connexion', 'error');
+                    }
+                },
+                async register() {
+                    try {
+                        const response = await axios.post('/register', this.registerForm);
+                        if (response.data.success) {
+                            this.showNotification(response.data.message, 'success');
+                            this.showRegisterModal = false;
+                            // Préparer les données de connexion
+                            this.loginForm.email = this.registerForm.email;
+                            this.loginForm.password = this.registerForm.password;
+                            // Connecter automatiquement
+                            await this.login();
+                        } else {
+                            this.showNotification(response.data.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        this.showNotification('Erreur lors de l\'inscription', 'error');
+                    }
                 }
             }
         }).mount('#app')

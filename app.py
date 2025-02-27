@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file, make_response
+from flask import Flask, render_template, request, jsonify, send_file, make_response, redirect, url_for, session
 from dotenv import load_dotenv
 import os
 import joblib
@@ -7,15 +7,32 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from utils import PredictionHistory, ReportGenerator
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from io import BytesIO
+from flask_session import Session
+from auth import init_db, register_user, login_user, logout_user, is_authenticated, save_prediction
+
+# Charger les variables d'environnement
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'votre_cle_secrete_tres_longue_et_aleatoire')
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')
+
+# Assurez-vous que le répertoire de session existe
+os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
+
+Session(app)
+
+# Initialiser la base de données MongoDB
+init_db()
 
 # Initialiser les gestionnaires
 prediction_history = PredictionHistory()
@@ -87,9 +104,28 @@ def index():
             'type': 'success',
             'message': ''
         },
-        'prediction': None
+        'prediction': None,
+        'is_authenticated': str(is_authenticated()).lower(),
+        'user_name': session.get('user_name', '')
     }
     return render_template('index.html', **initial_data)
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    success, message = register_user(data['email'], data['password'], data['name'])
+    return jsonify({'success': success, 'message': message})
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    success, message = login_user(data['email'], data['password'])
+    return jsonify({'success': success, 'message': message})
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 def get_risk_factors(disease_type, input_data, prediction):
     risk_factors = []
@@ -302,79 +338,53 @@ def get_recommendations(disease_type, risk_level):
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    # Vérification détaillée de l'authentification
+    app.logger.info(f"Session actuelle: {session}")
+    app.logger.info(f"État d'authentification: {is_authenticated()}")
+    app.logger.info(f"User ID dans la session: {session.get('user_id')}")
+    
+    if not is_authenticated():
+        app.logger.error("Utilisateur non authentifié")
+        return jsonify({
+            'success': False,
+            'message': 'Veuillez vous connecter pour faire une prédiction'
+        }), 401
+
     try:
-        print("Requête reçue:", request.json)  # Debug
-        data = request.json
+        data = request.get_json()
+        if not data:
+            app.logger.error("Aucune donnée reçue")
+            return jsonify({
+                'success': False,
+                'message': 'Aucune donnée reçue'
+            }), 400
+
+        app.logger.info(f"Données brutes reçues: {data}")
+        app.logger.info(f"Type des données reçues: {type(data)}")
+        
         disease_type = data.get('disease_type')
-        input_data = data.get('data', {})
+        input_data = data.get('input_data')
         
         if not disease_type or not input_data:
+            app.logger.error(f"Données manquantes: disease_type={disease_type}, input_data={input_data}")
             return jsonify({
-                'error': 'Les données sont incomplètes. Veuillez remplir tous les champs.'
+                'success': False,
+                'message': 'Données manquantes: type de maladie et données requises'
             }), 400
 
-        # Validation des données selon le type de maladie
-        if disease_type == 'diabetes':
-            if not all(key in input_data for key in ['glucose', 'age', 'bmi']):
-                return jsonify({
-                    'error': 'Veuillez fournir la glycémie, l\'âge et l\'IMC.'
-                }), 400
-            
-            # Validation des plages de valeurs
-            if not (70 <= float(input_data['glucose']) <= 400):
-                return jsonify({
-                    'error': 'La glycémie doit être comprise entre 70 et 400 mg/dL.'
-                }), 400
-            if not (15 <= float(input_data['bmi']) <= 50):
-                return jsonify({
-                    'error': 'L\'IMC doit être compris entre 15 et 50.'
-                }), 400
-
-        elif disease_type == 'hypertension':
-            if not all(key in input_data for key in ['systolic', 'diastolic', 'age']):
-                return jsonify({
-                    'error': 'Veuillez fournir la pression systolique, diastolique et l\'âge.'
-                }), 400
-            
-            # Validation des plages de valeurs
-            if not (90 <= float(input_data['systolic']) <= 200):
-                return jsonify({
-                    'error': 'La pression systolique doit être comprise entre 90 et 200 mmHg.'
-                }), 400
-            if not (60 <= float(input_data['diastolic']) <= 120):
-                return jsonify({
-                    'error': 'La pression diastolique doit être comprise entre 60 et 120 mmHg.'
-                }), 400
-
-        elif disease_type == 'cardiovascular':
-            if not all(key in input_data for key in ['heart_rate', 'cholesterol', 'age']):
-                return jsonify({
-                    'error': 'Veuillez fournir la fréquence cardiaque, le cholestérol et l\'âge.'
-                }), 400
-            
-            # Validation des plages de valeurs
-            if not (40 <= float(input_data['heart_rate']) <= 120):
-                return jsonify({
-                    'error': 'La fréquence cardiaque doit être comprise entre 40 et 120 bpm.'
-                }), 400
-            if not (100 <= float(input_data['cholesterol']) <= 300):
-                return jsonify({
-                    'error': 'Le cholestérol doit être compris entre 100 et 300 mg/dL.'
-                }), 400
-
-        else:
+        # Vérification du type de maladie
+        if disease_type not in ['diabetes', 'hypertension', 'cardiovascular']:
             return jsonify({
-                'error': 'Type de maladie non reconnu.'
+                'success': False,
+                'message': 'Type de maladie non valide'
             }), 400
 
-        # Validation de l'âge pour tous les types
-        if not (18 <= float(input_data['age']) <= 120):
-            return jsonify({
-                'error': 'L\'âge doit être compris entre 18 et 120 ans.'
-            }), 400
+        # Vérifier le type des données d'entrée
+        app.logger.info(f"Type des données d'entrée: {type(input_data)}")
+        app.logger.info(f"Contenu des données d'entrée: {input_data}")
+        app.logger.info(f"Clés dans input_data: {input_data.keys() if isinstance(input_data, dict) else 'Non dictionnaire'}")
 
-        # Conversion des données en tableau numpy pour la prédiction
-        X = []
+        # Préparer les données pour la prédiction
         if disease_type == 'diabetes':
             X = np.array([[
                 float(input_data['glucose']),
@@ -387,66 +397,54 @@ def predict():
                 float(input_data['diastolic']),
                 float(input_data['age'])
             ]])
-        elif disease_type == 'cardiovascular':
+        else:  # cardiovascular
             X = np.array([[
                 float(input_data['heart_rate']),
                 float(input_data['cholesterol']),
                 float(input_data['age'])
             ]])
 
-        # Normalisation des données
+        # Normaliser les données
         X_scaled = scalers[disease_type].transform(X)
         
-        # Prédiction
-        prediction = models[disease_type].predict_proba(X_scaled)[0][1]
-        print("Probabilité prédite:", prediction)  # Debug
+        # Faire la prédiction
+        prediction = bool(models[disease_type].predict(X_scaled)[0])
         
-        # Détermination du niveau de risque
-        if prediction < 0.3:
-            risk_level = 'Faible'
-            risk_description = 'Votre niveau de risque est faible. Continuez à maintenir vos bonnes habitudes de santé.'
-        elif prediction < 0.7:
-            risk_level = 'Modéré'
-            risk_description = 'Votre niveau de risque est modéré. Une attention particulière est recommandée.'
-        else:
-            risk_level = 'Élevé'
-            risk_description = 'Votre niveau de risque est élevé. Une consultation médicale est fortement recommandée.'
-            
-        # Obtenir les facteurs de risque et recommandations
+        # Obtenir les facteurs de risque
         risk_factors = get_risk_factors(disease_type, input_data, prediction)
+        
+        # Obtenir les recommandations
+        risk_level = 'Élevé' if prediction else 'Faible'
         recommendations = get_recommendations(disease_type, risk_level)
         
-        print("Recommandations générées:", recommendations)  # Debug log
-        
-        # Créer l'objet de prédiction complet
-        prediction_data = {
-            'disease_type': disease_type,
+        # Créer l'objet de réponse
+        response_data = {
+            'success': True,
+            'prediction': prediction,
             'risk_level': risk_level,
-            'risk_description': risk_description,
-            'probability': round(float(prediction) * 100, 1),
             'risk_factors': risk_factors,
             'recommendations': recommendations,
-            'input_data': input_data,
-            'message': risk_description
+            'probability': 75 if prediction else 25  # Valeur exemple
         }
         
-        print("Données de prédiction complètes:", prediction_data)  # Debug log
+        # Sauvegarder la prédiction dans MongoDB
+        prediction_data = {
+            'disease_type': disease_type,
+            'input_data': input_data,
+            'prediction': prediction,
+            'risk_factors': risk_factors,
+            'recommendations': recommendations,
+            'timestamp': datetime.now()
+        }
+        save_prediction(session['user_id'], prediction_data)
         
-        # Sauvegarder la prédiction dans l'historique
-        prediction_history.add_prediction(prediction_data)
+        return jsonify(response_data)
         
-        return jsonify(prediction_data)
-
-    except ValueError as e:
-        print("Erreur de valeur:", str(e))  # Debug
-        return jsonify({
-            'error': 'Erreur de format : veuillez vérifier que toutes les valeurs sont des nombres valides.'
-        }), 400
     except Exception as e:
-        print("Erreur inattendue:", str(e))  # Debug
-        app.logger.error(f'Erreur lors de la prédiction : {str(e)}')
+        app.logger.error(f'Erreur lors de la prédiction: {str(e)}')
         return jsonify({
-            'error': 'Une erreur inattendue est survenue. Veuillez réessayer.'
+            'success': False,
+            'message': f'Erreur lors de la prédiction: {str(e)}'
         }), 500
 
 @app.route('/generate_report', methods=['POST'])
@@ -473,6 +471,11 @@ def generate_report():
 
 @app.route('/history', methods=['GET'])
 def get_history():
+    if not is_authenticated():
+        return jsonify({
+            'error': 'Veuillez vous connecter pour accéder à l\'historique'
+        }), 401
+        
     try:
         predictions = prediction_history.get_predictions()
         return jsonify(predictions)
@@ -484,6 +487,11 @@ def get_history():
 
 @app.route('/statistics', methods=['GET'])
 def get_statistics():
+    if not is_authenticated():
+        return jsonify({
+            'error': 'Veuillez vous connecter pour accéder aux statistiques'
+        }), 401
+        
     try:
         stats = prediction_history.get_user_statistics()
         if not stats:
@@ -500,6 +508,11 @@ def get_statistics():
 
 @app.route('/statistics_report', methods=['GET'])
 def generate_statistics_report():
+    if not is_authenticated():
+        return jsonify({
+            'error': 'Veuillez vous connecter pour générer le rapport'
+        }), 401
+        
     try:
         predictions = prediction_history.get_predictions()
         if not predictions:
