@@ -43,13 +43,115 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Style personnalisé pour les formulaires */
+        /* Style pour les cartes de prédiction */
+        .prediction-card {
+            @apply bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500;
+            @apply transform hover:-translate-y-2;
+            @apply border-t-8;
+        }
+
+        .prediction-card.diabetes {
+            @apply border-blue-500;
+        }
+
+        .prediction-card.hypertension {
+            @apply border-red-500;
+        }
+
+        .prediction-card.cardiovascular {
+            @apply border-purple-500;
+        }
+
+        /* Style pour les champs de formulaire */
         .form-input {
             @apply w-full px-8 py-6 text-xl rounded-xl border-4 focus:ring-4 transition-all duration-300;
             @apply placeholder-gray-500 text-gray-900 font-medium;
             @apply shadow-lg hover:shadow-xl;
-            @apply mb-4;
-            min-height: 4.5rem;
+            @apply mb-6;
+            min-height: 5rem;
+        }
+
+        .form-input-diabetes {
+            @apply border-blue-400 focus:border-blue-600 focus:ring-blue-300 hover:border-blue-500;
+            background: linear-gradient(to right bottom, rgba(239, 246, 255, 0.9), rgba(219, 234, 254, 0.9));
+        }
+
+        .form-input-hypertension {
+            @apply border-red-400 focus:border-red-600 focus:ring-red-300 hover:border-red-500;
+            background: linear-gradient(to right bottom, rgba(254, 242, 242, 0.9), rgba(254, 226, 226, 0.9));
+        }
+
+        .form-input-cardio {
+            @apply border-purple-400 focus:border-purple-600 focus:ring-purple-300 hover:border-purple-500;
+            background: linear-gradient(to right bottom, rgba(245, 243, 255, 0.9), rgba(237, 233, 254, 0.9));
+        }
+
+        .form-group {
+            @apply transform transition-all duration-300 p-8 rounded-xl bg-white;
+            @apply shadow-md hover:shadow-lg;
+            @apply mb-8;
+            @apply border-l-4;
+        }
+
+        .form-group.diabetes {
+            @apply border-l-blue-500 bg-blue-50;
+        }
+
+        .form-group.hypertension {
+            @apply border-l-red-500 bg-red-50;
+        }
+
+        .form-group.cardiovascular {
+            @apply border-l-purple-500 bg-purple-50;
+        }
+
+        .form-label {
+            @apply block text-gray-800 font-bold mb-4 flex items-center gap-4 text-2xl;
+            @apply transition-colors duration-200;
+        }
+
+        .form-icon {
+            @apply w-12 h-12 p-2 rounded-full bg-white shadow-md;
+        }
+
+        /* Style pour les boutons de prédiction */
+        .prediction-button {
+            @apply w-full py-6 px-8 rounded-xl font-bold text-xl text-white;
+            @apply transform transition-all duration-300;
+            @apply shadow-lg hover:shadow-xl;
+            @apply flex items-center justify-center gap-4;
+            @apply disabled:opacity-50 disabled:cursor-not-allowed;
+            @apply mt-8;
+        }
+
+        .prediction-button-diabetes {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            @apply hover:scale-105;
+        }
+
+        .prediction-button-hypertension {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            @apply hover:scale-105;
+        }
+
+        .prediction-button-cardio {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            @apply hover:scale-105;
+        }
+
+        /* Messages d'erreur */
+        .error-message {
+            @apply mt-3 text-base font-semibold;
+            @apply flex items-center gap-2;
+            @apply opacity-0 transition-opacity duration-300;
+        }
+
+        .error-message.visible {
+            @apply opacity-100;
+        }
+
+        .error-message i {
+            @apply text-red-500;
         }
 
         /* Style pour le menu mobile */
@@ -85,12 +187,6 @@
         }
         .btn-secondary {
             @apply bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transform hover:scale-105 transition duration-200;
-        }
-
-        /* Style pour les cartes de prédiction */
-        .prediction-card {
-            @apply bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300;
-            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
         }
 
         /* Style pour la barre de progression */
@@ -130,42 +226,6 @@
             border-top-color: transparent;
         }
 
-        /* Style pour les champs de formulaire */
-        .form-input-diabetes {
-            @apply border-blue-400 focus:border-blue-600 focus:ring-blue-300 hover:border-blue-500;
-            background-color: rgba(239, 246, 255, 0.8);
-        }
-        
-        .form-input-hypertension {
-            @apply border-red-400 focus:border-red-600 focus:ring-red-300 hover:border-red-500;
-            background-color: rgba(254, 242, 242, 0.8);
-        }
-        
-        .form-input-cardio {
-            @apply border-purple-400 focus:border-purple-600 focus:ring-purple-300 hover:border-purple-500;
-            background-color: rgba(245, 243, 255, 0.8);
-        }
-        
-        .form-group {
-            @apply transform transition-all duration-200 p-8 rounded-xl bg-white shadow-xl hover:shadow-2xl;
-            @apply mb-8;
-            border: 2px solid #e5e7eb;
-        }
-        
-        .form-label {
-            @apply block text-gray-800 font-bold mb-4 flex items-center space-x-4 text-2xl;
-            @apply transition-colors duration-200;
-        }
-        
-        .form-icon {
-            @apply w-10 h-10 opacity-100;
-        }
-
-        /* Messages d'erreur */
-        .error-message {
-            @apply mt-3 text-base text-red-600 font-semibold;
-        }
-
         /* Responsive Design amélioré */
         @media (max-width: 640px) {
             .form-input {
@@ -182,17 +242,21 @@
             }
             
             .form-icon {
-                @apply w-8 h-8;
+                @apply w-10 h-10;
+            }
+            
+            .prediction-button {
+                @apply py-4 text-lg;
             }
         }
 
         @media (min-width: 641px) and (max-width: 768px) {
-            .form-input {
-                @apply px-7 py-5 text-xl;
+            .prediction-grid {
+                @apply gap-8;
             }
             
             .form-group {
-                @apply p-7;
+                @apply p-6;
             }
         }
 
@@ -202,11 +266,7 @@
             }
             
             .form-group {
-                @apply p-10;
-            }
-            
-            .form-input {
-                @apply text-xl;
+                @apply p-8;
             }
         }
     </style>
@@ -402,7 +462,7 @@
                 <!-- Section de prédiction pour les utilisateurs connectés -->
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 prediction-grid">
                     <!-- Carte Diabète -->
-                    <div class="prediction-card group">
+                    <div class="prediction-card diabetes">
                         <div class="relative overflow-hidden rounded-t-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-6">
                             <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400 rounded-full opacity-20 transform rotate-12"></div>
                             <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-300 rounded-full opacity-20"></div>
@@ -415,7 +475,7 @@
                         </div>
                         <div class="p-8 space-y-6 bg-white rounded-b-2xl">
                             <form @submit.prevent="predict('diabetes')" class="space-y-6" novalidate>
-                                <div class="form-group">
+                                <div class="form-group diabetes">
                                     <label for="glucose" class="form-label">
                                         <i class="fas fa-tint form-icon text-blue-500"></i>
                                         <span>Glycémie (mg/dL)</span>
@@ -436,7 +496,7 @@
                                     </p>
                                 </div>
                                 
-                                <div class="form-group">
+                                <div class="form-group diabetes">
                                     <label for="age_diabetes" class="form-label">
                                         <i class="fas fa-calendar-alt form-icon text-blue-500"></i>
                                         <span>Âge</span>
@@ -456,7 +516,7 @@
                                     </p>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group diabetes">
                                     <label for="bmi" class="form-label">
                                         <i class="fas fa-weight form-icon text-blue-500"></i>
                                         <span>IMC</span>
@@ -494,7 +554,7 @@
                     </div>
 
                     <!-- Carte Hypertension -->
-                    <div class="prediction-card group">
+                    <div class="prediction-card hypertension">
                         <div class="relative overflow-hidden rounded-t-2xl bg-gradient-to-br from-red-500 to-red-600 p-6">
                             <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-400 rounded-full opacity-20 transform rotate-12"></div>
                             <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-red-300 rounded-full opacity-20"></div>
@@ -507,7 +567,7 @@
                         </div>
                         <div class="p-8 space-y-6 bg-white rounded-b-2xl">
                             <form @submit.prevent="predict('hypertension')" class="space-y-6" novalidate>
-                                <div class="form-group">
+                                <div class="form-group hypertension">
                                     <label for="systolic" class="form-label">
                                         <i class="fas fa-arrow-up form-icon text-red-500"></i>
                                         <span>Pression Systolique (mmHg)</span>
@@ -527,7 +587,7 @@
                                     </p>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group hypertension">
                                     <label for="diastolic" class="form-label">
                                         <i class="fas fa-arrow-down form-icon text-red-500"></i>
                                         <span>Pression Diastolique (mmHg)</span>
@@ -547,7 +607,7 @@
                                     </p>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group hypertension">
                                     <label for="age_hypertension" class="form-label">
                                         <i class="fas fa-calendar-alt form-icon text-red-500"></i>
                                         <span>Âge</span>
@@ -584,7 +644,7 @@
                     </div>
 
                     <!-- Carte Cardiovasculaire -->
-                    <div class="prediction-card group">
+                    <div class="prediction-card cardiovascular">
                         <div class="relative overflow-hidden rounded-t-2xl bg-gradient-to-br from-purple-500 to-purple-600 p-6">
                             <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-400 rounded-full opacity-20 transform rotate-12"></div>
                             <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-purple-300 rounded-full opacity-20"></div>
@@ -597,7 +657,7 @@
                         </div>
                         <div class="p-8 space-y-6 bg-white rounded-b-2xl">
                             <form @submit.prevent="predict('cardiovascular')" class="space-y-6" novalidate>
-                                <div class="form-group">
+                                <div class="form-group cardiovascular">
                                     <label for="heart_rate" class="form-label">
                                         <i class="fas fa-heartbeat form-icon text-purple-500"></i>
                                         <span>Fréquence Cardiaque (bpm)</span>
@@ -617,7 +677,7 @@
                                     </p>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group cardiovascular">
                                     <label for="cholesterol" class="form-label">
                                         <i class="fas fa-flask form-icon text-purple-500"></i>
                                         <span>Cholestérol (mg/dL)</span>
@@ -637,7 +697,7 @@
                                     </p>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group cardiovascular">
                                     <label for="age_cardio" class="form-label">
                                         <i class="fas fa-calendar-alt form-icon text-purple-500"></i>
                                         <span>Âge</span>
