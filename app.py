@@ -693,16 +693,27 @@ def new_post():
         return redirect(url_for('blog'))
         
     if request.method == 'POST':
-        data = request.get_json()
-        success, post_id = create_blog_post(
-            title=data['title'],
-            content=data['content'],
-            author_id=session['user_id'],
-            author_name=session['user_name'],
-            image_url=data.get('image_url'),
-            tags=data.get('tags', [])
-        )
-        return jsonify({'success': success, 'post_id': post_id})
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'success': False, 'message': 'Données invalides'}), 400
+                
+            success, result = create_blog_post(
+                title=data.get('title'),
+                content=data.get('content'),
+                author_id=session['user_id'],
+                author_name=session['user_name'],
+                image=data.get('image'),  # Utilisation de 'image' au lieu de 'image_url'
+                tags=data.get('tags', [])
+            )
+            
+            if success:
+                return jsonify({'success': True, 'post_id': result})
+            else:
+                return jsonify({'success': False, 'message': result}), 400
+                
+        except Exception as e:
+            return jsonify({'success': False, 'message': str(e)}), 500
     
     return render_template('blog_editor.html', is_authenticated=is_authenticated())
 

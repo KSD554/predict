@@ -126,26 +126,30 @@ def save_prediction(user_id, prediction_data):
 
 def create_blog_post(title, content, author_id, author_name, image=None, tags=None):
     try:
-        # Vérifier si l'image est fournie
-        if not image:
-            logger.error("Image manquante pour la création de l'article")
-            return False, "L'image de couverture est obligatoire"
+        # Validation des champs obligatoires
+        if not title or not title.strip():
+            return False, "Le titre est obligatoire"
+        if not content or not content.strip():
+            return False, "Le contenu est obligatoire"
 
-        # Vérifier si l'image est en base64
-        if not image.startswith('data:image/'):
-            logger.error("Format d'image invalide")
-            return False, "Format d'image invalide"
+        # Validation de l'image si fournie
+        if image:
+            if not isinstance(image, str):
+                return False, "Format d'image invalide"
+            if not image.startswith('data:image/'):
+                return False, "L'image doit être au format base64"
 
         post = {
-            'title': title,
-            'content': content,
+            'title': title.strip(),
+            'content': content.strip(),
             'author_id': author_id,
             'author_name': author_name,
-            'image': image,  # Stockage de l'image en base64
+            'image': image,
             'tags': tags or [],
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
             'likes': 0,
+            'likes_by': [],
             'comments': []
         }
         result = blog_posts.insert_one(post)
@@ -153,7 +157,7 @@ def create_blog_post(title, content, author_id, author_name, image=None, tags=No
         return True, str(result.inserted_id)
     except Exception as e:
         logger.error(f"Erreur lors de la création de l'article: {str(e)}")
-        return False, str(e)
+        return False, "Erreur lors de la création de l'article"
 
 def get_blog_posts(page=1, per_page=10):
     try:
