@@ -5,24 +5,44 @@ from bson.objectid import ObjectId
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+import logging
+
+# Configuration du logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Charger les variables d'environnement
 load_dotenv()
 
 # Connexion à MongoDB
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb+srv://sadok:sadok@medi.vdcvl.mongodb.net/?retryWrites=true&w=majority&appName=medi')
-client = MongoClient(MONGODB_URI)
+logger.info(f"Tentative de connexion à MongoDB avec URI: {MONGODB_URI}")
+
+try:
+    client = MongoClient(MONGODB_URI)
+    # Tester la connexion
+    client.admin.command('ping')
+    logger.info("Connexion à MongoDB réussie!")
+except Exception as e:
+    logger.error(f"Erreur de connexion à MongoDB: {str(e)}")
+    raise e
+
 db = client['medical_predictions']
 users = db['users']
 predictions = db['predictions']
 blog_posts = db['blog_posts']
 
 def init_db():
-    # Création d'index unique pour l'email
-    users.create_index('email', unique=True)
-    # Création d'index pour les articles de blog
-    blog_posts.create_index([('title', 1)])
-    blog_posts.create_index([('created_at', -1)])
+    try:
+        # Création d'index unique pour l'email
+        users.create_index('email', unique=True)
+        # Création d'index pour les articles de blog
+        blog_posts.create_index([('title', 1)])
+        blog_posts.create_index([('created_at', -1)])
+        logger.info("Initialisation de la base de données réussie!")
+    except Exception as e:
+        logger.error(f"Erreur lors de l'initialisation de la base de données: {str(e)}")
+        raise e
 
 def register_user(email, password, name):
     try:
@@ -124,9 +144,13 @@ def create_blog_post(title, content, author_id, author_name, image_url=None, tag
 
 def get_blog_posts(page=1, per_page=10):
     try:
+        logger.info(f"Tentative de récupération des articles - Page: {page}, Articles par page: {per_page}")
         skip = (page - 1) * per_page
         total = blog_posts.count_documents({})
+        logger.info(f"Nombre total d'articles trouvés: {total}")
+        
         posts = list(blog_posts.find().sort('created_at', -1).skip(skip).limit(per_page))
+        logger.info(f"Nombre d'articles récupérés pour cette page: {len(posts)}")
         
         # Convertir ObjectId en str pour la sérialisation JSON
         for post in posts:
@@ -134,13 +158,16 @@ def get_blog_posts(page=1, per_page=10):
             post['created_at'] = post['created_at'].strftime('%Y-%m-%d %H:%M:%S')
             post['updated_at'] = post['updated_at'].strftime('%Y-%m-%d %H:%M:%S')
         
-        return {
+        result = {
             'posts': posts,
             'total': total,
             'pages': (total + per_page - 1) // per_page,
             'current_page': page
         }
+        logger.info(f"Résultat de la récupération: {result}")
+        return result
     except Exception as e:
+        logger.error(f"Erreur lors de la récupération des articles: {str(e)}")
         return None
 
 def get_blog_post(post_id):
