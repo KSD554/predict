@@ -8,18 +8,27 @@
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- TinyMCE avec une clé API gratuite -->
-    <script src="https://cdn.tiny.cloud/1/qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- TinyMCE sans clé API -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
     <script>
-        tinymce.init({
-            selector: '#content',
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-            height: 500,
-            menubar: false,
-            statusbar: false,
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5; }',
-            readonly: false
+        window.addEventListener('DOMContentLoaded', (event) => {
+            tinymce.init({
+                selector: '#content',
+                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount',
+                toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+                height: 500,
+                menubar: true,
+                branding: false,
+                promotion: false,
+                forced_root_block: 'p',
+                verify_html: false,
+                readonly: 0,
+                setup: function (editor) {
+                    editor.on('init', function () {
+                        editor.setMode('design');
+                    });
+                }
+            });
         });
     </script>
 </head>

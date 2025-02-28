@@ -17,7 +17,7 @@ from flask_session import Session
 from auth import (
     init_db, register_user, login_user, logout_user, is_authenticated, save_prediction,
     client, create_blog_post, get_blog_posts, get_blog_post, update_blog_post,
-    delete_blog_post, add_comment, toggle_like
+    delete_blog_post, add_comment, toggle_like, add_site_comment, delete_site_comment
 )
 
 # Charger les variables d'environnement
@@ -102,17 +102,12 @@ models, scalers = initialize_models()
 
 @app.route('/')
 def index():
-    initial_data = {
-        'notification': {
-            'show': False,
-            'type': 'success',
-            'message': ''
-        },
-        'prediction': None,
-        'is_authenticated': str(is_authenticated()).lower(),
-        'user_name': session.get('user_name', '')
-    }
-    return render_template('index.html', **initial_data)
+    predictions_count = len(list(predictions.find()))
+    comments = get_site_comments()
+    return render_template('index.html', 
+                         predictions_count=predictions_count,
+                         is_authenticated=is_authenticated(),
+                         comments=comments)
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -754,6 +749,36 @@ def like_post(post_id):
         
     success = toggle_like(post_id, session['user_id'])
     return jsonify({'success': success})
+
+@app.route('/add_site_comment', methods=['POST'])
+def add_site_comment_route():
+    if not is_authenticated():
+        return jsonify({'success': False, 'message': 'Vous devez être connecté pour commenter'}), 401
+    
+    data = request.get_json()
+    content = data.get('content')
+    
+    if not content or not content.strip():
+        return jsonify({'success': False, 'message': 'Le commentaire ne peut pas être vide'}), 400
+    
+    success, result = add_site_comment(
+        session['user_id'],
+        session['user_name'],
+        content.strip()
+    )
+    
+    if success:
+        return jsonify({'success': True, 'comment_id': result})
+    return jsonify({'success': False, 'message': 'Erreur lors de l\'ajout du commentaire'}), 500
+
+@app.route('/delete_site_comment/<comment_id>', methods=['DELETE'])
+def delete_site_comment_route(comment_id):
+    if not is_authenticated():
+        return jsonify({'success': False, 'message': 'Non autorisé'}), 401
+    
+    if delete_site_comment(comment_id, session['user_id']):
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'message': 'Erreur lors de la suppression du commentaire'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

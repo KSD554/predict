@@ -31,6 +31,7 @@ db = client['medical_predictions']
 users = db['users']
 predictions = db['predictions']
 blog_posts = db['blog_posts']
+site_comments = db['site_comments']
 
 def init_db():
     try:
@@ -274,4 +275,36 @@ def toggle_like(post_id, user_id):
             )
         return True
     except Exception as e:
+        return False
+
+def add_site_comment(user_id, user_name, content):
+    try:
+        comment = {
+            'user_id': user_id,
+            'user_name': user_name,
+            'content': content,
+            'created_at': datetime.now()
+        }
+        result = site_comments.insert_one(comment)
+        return True, str(result.inserted_id)
+    except Exception as e:
+        logger.error(f"Erreur lors de l'ajout du commentaire: {str(e)}")
+        return False, str(e)
+
+def get_site_comments():
+    try:
+        return list(site_comments.find().sort('created_at', -1))
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des commentaires: {str(e)}")
+        return []
+
+def delete_site_comment(comment_id, user_id):
+    try:
+        result = site_comments.delete_one({
+            '_id': ObjectId(comment_id),
+            'user_id': user_id
+        })
+        return result.deleted_count > 0
+    except Exception as e:
+        logger.error(f"Erreur lors de la suppression du commentaire: {str(e)}")
         return False
