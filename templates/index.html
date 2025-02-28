@@ -12,13 +12,105 @@
         [v-cloak] {
             display: none;
         }
+
+        /* Animations et transitions */
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
+
+        /* Animations pour les cartes */
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style personnalisé pour les formulaires */
+        .custom-input {
+            @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200;
+        }
+
+        /* Style pour le menu mobile */
+        .mobile-menu {
+            @apply fixed inset-0 bg-gray-800 bg-opacity-50 z-50 transform transition-transform duration-300;
+        }
+        .mobile-menu.active {
+            @apply translate-x-0;
+        }
+        .mobile-menu:not(.active) {
+            @apply translate-x-full;
+        }
+
+        /* Animations pour les notifications */
+        .notification-enter-active {
+            animation: slideIn 0.3s ease-out;
+        }
+        .notification-leave-active {
+            animation: slideOut 0.3s ease-in;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-100%); opacity: 0; }
+        }
+
+        /* Style pour les boutons */
+        .btn-primary {
+            @apply bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition duration-200;
+        }
+        .btn-secondary {
+            @apply bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transform hover:scale-105 transition duration-200;
+        }
+
+        /* Style pour les cartes de prédiction */
+        .prediction-card {
+            @apply bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300;
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        /* Style pour la barre de progression */
+        .progress-bar {
+            @apply h-2 rounded-full overflow-hidden bg-gray-200;
+        }
+        .progress-bar-fill {
+            @apply h-full transition-all duration-500 ease-out;
+        }
+
+        /* Responsive design amélioré */
         @media (max-width: 768px) {
-            .mobile-menu {
-                display: none;
+            .hero-section {
+                @apply px-4 py-12 text-center;
             }
-            .mobile-menu.active {
-                display: block;
+            .prediction-grid {
+                @apply grid-cols-1 gap-6;
             }
+            .stats-grid {
+                @apply grid-cols-1 gap-4;
+            }
+        }
+
+        /* Style pour le hero section */
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+
+        /* Glassmorphism effect */
+        .glass-effect {
+            @apply backdrop-blur-lg bg-white bg-opacity-20;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            @apply animate-spin rounded-full h-6 w-6 border-4;
+            border-top-color: transparent;
         }
     </style>
 </head>
@@ -151,46 +243,59 @@
         </div>
 
         <!-- Hero Section -->
-        <section class="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-12 sm:py-20">
+        <section class="hero-gradient text-white py-16 sm:py-24">
             <div class="container mx-auto px-4 sm:px-6">
-                <div class="flex flex-col md:flex-row items-center">
+                <div class="flex flex-col md:flex-row items-center justify-between">
                     <div class="md:w-1/2 mb-8 md:mb-0 text-center md:text-left">
-                        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Prédiction des Risques de Santé</h1>
-                        <p class="text-lg sm:text-xl mb-8">Utilisez l'intelligence artificielle pour évaluer vos risques de santé et obtenir des recommandations personnalisées.</p>
-                        <a href="#prediction" class="inline-block bg-white text-blue-600 px-6 sm:px-8 py-3 rounded-full font-semibold hover:bg-blue-50 transition">Commencer l'évaluation</a>
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                            Prédiction des Risques de Santé
+                        </h1>
+                        <p class="text-xl sm:text-2xl mb-8 text-blue-100 leading-relaxed">
+                            Utilisez l'intelligence artificielle pour évaluer vos risques de santé et obtenir des recommandations personnalisées.
+                        </p>
+                        <a href="#prediction" 
+                           class="inline-block bg-white text-blue-600 px-8 sm:px-10 py-4 rounded-full font-semibold text-lg hover:bg-blue-50 transform hover:scale-105 transition duration-300 shadow-lg">
+                            Commencer l'évaluation
+                        </a>
                     </div>
                     <div class="md:w-1/2 flex justify-center">
-                        <i class="fas fa-user-md text-6xl sm:text-8xl opacity-90"></i>
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-blue-500 rounded-full filter blur-3xl opacity-20"></div>
+                            <i class="fas fa-user-md text-8xl sm:text-9xl opacity-90 relative z-10"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Prediction Section -->
-        <section id="prediction" class="py-12 sm:py-16">
+        <section id="prediction" class="py-16 sm:py-24 bg-gray-50">
             <div class="container mx-auto px-4 sm:px-6">
-                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-800">Évaluation des Risques</h2>
+                <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-gray-800">Évaluation des Risques</h2>
                 
                 <!-- Messages de notification -->
-                <div v-if="notification.show" :class="['mb-6 p-4 rounded-lg text-white text-center transition-all', 
-                    notification.type === 'success' ? 'bg-green-500' : 'bg-red-500']"
-                    v-cloak>
-                    <span v-text="notification.message"></span>
-                </div>
+                <transition name="notification">
+                    <div v-if="notification.show" 
+                         :class="['mb-6 p-4 rounded-lg text-white text-center transform transition-all duration-300', 
+                         notification.type === 'success' ? 'bg-green-500' : 'bg-red-500']"
+                         v-cloak>
+                        <span v-text="notification.message"></span>
+                    </div>
+                </transition>
 
                 <!-- Message pour les utilisateurs non connectés -->
-                <div v-if="!isAuthenticated" class="text-center py-8">
-                    <div class="bg-blue-50 rounded-lg p-8 max-w-2xl mx-auto">
-                        <i class="fas fa-lock text-blue-500 text-4xl mb-4"></i>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Accès Restreint</h3>
-                        <p class="text-gray-600 mb-6">Pour accéder aux prédictions de santé, veuillez vous connecter ou créer un compte.</p>
+                <div v-if="!isAuthenticated" class="text-center py-12">
+                    <div class="glass-effect rounded-2xl p-8 max-w-2xl mx-auto bg-white bg-opacity-90 shadow-xl">
+                        <i class="fas fa-lock text-blue-500 text-5xl mb-6"></i>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Accès Restreint</h3>
+                        <p class="text-gray-600 text-lg mb-8">Pour accéder aux prédictions de santé, veuillez vous connecter ou créer un compte.</p>
                         <div class="space-x-4">
                             <button @click="showLoginModal = true" 
-                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                                    class="btn-primary">
                                 Se connecter
                             </button>
                             <button @click="showRegisterModal = true" 
-                                    class="bg-white text-blue-600 border border-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50 transition">
+                                    class="btn-secondary">
                                 S'inscrire
                             </button>
                         </div>
@@ -198,44 +303,46 @@
                 </div>
 
                 <!-- Section de prédiction pour les utilisateurs connectés -->
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 prediction-grid">
                     <!-- Carte Diabète -->
-                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
-                        <div class="flex items-center mb-4">
-                            <i class="fas fa-chart-line text-blue-600 text-2xl mr-3"></i>
+                    <div class="prediction-card card-hover">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mr-4">
+                                <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
+                            </div>
                             <h3 class="text-xl font-semibold text-gray-800">Diabète</h3>
                         </div>
-                        <form @submit.prevent="predict('diabetes')" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="glucose">
+                        <form @submit.prevent="predict('diabetes')" class="space-y-6">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="glucose">
                                     Glycémie (mg/dL)
                                 </label>
                                 <input v-model="formData.diabetes.glucose"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="70"
                                        max="400"
                                        step="1">
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="age">
                                     Âge
                                 </label>
                                 <input v-model="formData.diabetes.age"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="18"
                                        max="120">
                             </div>
-                            <div class="mb-6">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="bmi">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="bmi">
                                     IMC
                                 </label>
                                 <input v-model="formData.diabetes.bmi"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="15"
                                        max="50"
@@ -243,112 +350,119 @@
                             </div>
                             <button type="submit"
                                     :disabled="isLoading"
-                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span v-if="!isLoading">Analyser</span>
-                                <span v-else>
-                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                <span v-else class="flex items-center justify-center">
+                                    <span class="spinner mr-2"></span>
+                                    Analyse en cours...
                                 </span>
                             </button>
                         </form>
                     </div>
 
                     <!-- Carte Hypertension -->
-                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
-                        <div class="flex items-center mb-4">
-                            <i class="fas fa-heart-pulse text-red-600 text-2xl mr-3"></i>
+                    <div class="prediction-card card-hover">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-red-100 mr-4">
+                                <i class="fas fa-heart-pulse text-red-600 text-2xl"></i>
+                            </div>
                             <h3 class="text-xl font-semibold text-gray-800">Hypertension</h3>
                         </div>
-                        <form @submit.prevent="predict('hypertension')" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="systolic">
+                        <form @submit.prevent="predict('hypertension')" class="space-y-6">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="systolic">
                                     Pression Systolique (mmHg)
                                 </label>
                                 <input v-model="formData.hypertension.systolic"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="90"
                                        max="200">
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="diastolic">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="diastolic">
                                     Pression Diastolique (mmHg)
                                 </label>
                                 <input v-model="formData.hypertension.diastolic"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="60"
                                        max="120">
                             </div>
-                            <div class="mb-6">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="age">
                                     Âge
                                 </label>
                                 <input v-model="formData.hypertension.age"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="18"
                                        max="120">
                             </div>
                             <button type="submit"
                                     :disabled="isLoading"
-                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span v-if="!isLoading">Analyser</span>
-                                <span v-else>
-                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                <span v-else class="flex items-center justify-center">
+                                    <span class="spinner mr-2"></span>
+                                    Analyse en cours...
                                 </span>
                             </button>
                         </form>
                     </div>
 
-                    <!-- Carte Maladies Cardiovasculaires -->
-                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
-                        <div class="flex items-center mb-4">
-                            <i class="fas fa-heartbeat text-purple-600 text-2xl mr-3"></i>
+                    <!-- Carte Cardiovasculaire -->
+                    <div class="prediction-card card-hover">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 mr-4">
+                                <i class="fas fa-heartbeat text-purple-600 text-2xl"></i>
+                            </div>
                             <h3 class="text-xl font-semibold text-gray-800">Cardiovasculaire</h3>
                         </div>
-                        <form @submit.prevent="predict('cardiovascular')" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="heart_rate">
+                        <form @submit.prevent="predict('cardiovascular')" class="space-y-6">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="heart_rate">
                                     Fréquence Cardiaque (bpm)
                                 </label>
                                 <input v-model="formData.cardiovascular.heart_rate"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="40"
                                        max="120">
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="cholesterol">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="cholesterol">
                                     Cholestérol (mg/dL)
                                 </label>
                                 <input v-model="formData.cardiovascular.cholesterol"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="100"
                                        max="300">
                             </div>
-                            <div class="mb-6">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-medium mb-2" for="age">
                                     Âge
                                 </label>
                                 <input v-model="formData.cardiovascular.age"
                                        type="number"
-                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       class="custom-input"
                                        required
                                        min="18"
                                        max="120">
                             </div>
                             <button type="submit"
                                     :disabled="isLoading"
-                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span v-if="!isLoading">Analyser</span>
-                                <span v-else>
-                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                <span v-else class="flex items-center justify-center">
+                                    <span class="spinner mr-2"></span>
+                                    Analyse en cours...
                                 </span>
                             </button>
                         </form>
@@ -356,94 +470,100 @@
                 </div>
 
                 <!-- Résultats -->
-                <div v-if="prediction" class="mt-8 sm:mt-12 bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-2xl mx-auto" v-cloak>
-                    <h3 class="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center text-gray-800">Résultats de l'Analyse</h3>
-                    
-                    <!-- Niveau de Risque -->
-                    <div class="mb-6 sm:mb-8">
-                        <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
-                            <h4 class="text-lg font-medium text-gray-700 mb-4 sm:mb-0">Niveau de Risque :</h4>
-                            <div :class="['px-4 py-2 rounded-full text-white font-medium', 
-                                prediction.risk_level === 'Élevé' ? 'bg-red-500' : 
-                                prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500']">
-                                [[ prediction.risk_level ]]
-                            </div>
-                        </div>
-
-                        <!-- Description du Risque -->
-                        <div class="text-gray-600 mb-6 text-base sm:text-lg">
-                            [[ prediction.risk_description ]]
-                        </div>
-
-                        <!-- Probabilité -->
-                        <div class="mb-6">
-                            <div class="w-full bg-gray-200 rounded-full h-4">
-                                <div :class="[
-                                    'h-full rounded-full transition-all duration-500',
-                                    prediction.risk_level === 'Élevé' ? 'bg-red-500' :
-                                    prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500'
-                                ]" :style="{ width: prediction.probability + '%' }"></div>
-                            </div>
-                            <div class="text-center text-sm text-gray-600 mt-2">
-                                Probabilité : [[ prediction.probability ]]%
-                            </div>
-                        </div>
-
-                        <!-- Facteurs de Risque -->
-                        <div v-if="prediction.risk_factors && prediction.risk_factors.length" class="mb-6">
-                            <h4 class="font-semibold mb-4 text-lg text-gray-800">Facteurs de Risque Identifiés</h4>
-                            <div class="space-y-4">
-                                <div v-for="factor in prediction.risk_factors" :key="factor.name" 
-                                     :class="[
-                                         'p-4 rounded-lg',
-                                         factor.severity === 'high' ? 'bg-red-50' :
-                                         factor.severity === 'medium' ? 'bg-yellow-50' : 'bg-green-50'
-                                     ]">
-                                    <h5 class="font-medium mb-2"
-                                        :class="[
-                                            factor.severity === 'high' ? 'text-red-700' :
-                                            factor.severity === 'medium' ? 'text-yellow-700' : 'text-green-700'
-                                        ]">
-                                        [[ factor.name ]]
-                                    </h5>
-                                    <p class="text-gray-600">[[ factor.description ]]</p>
+                <div v-if="prediction" class="mt-12 sm:mt-16" v-cloak>
+                    <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 max-w-4xl mx-auto overflow-hidden">
+                        <h3 class="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-800">Résultats de l'Analyse</h3>
+                        
+                        <!-- Niveau de Risque -->
+                        <div class="mb-8 sm:mb-12">
+                            <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
+                                <h4 class="text-xl font-medium text-gray-700 mb-4 sm:mb-0">Niveau de Risque :</h4>
+                                <div :class="['px-6 py-3 rounded-full text-white font-medium text-lg transform transition-all duration-300 hover:scale-105', 
+                                    prediction.risk_level === 'Élevé' ? 'bg-red-500' : 
+                                    prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500']">
+                                    [[ prediction.risk_level ]]
                                 </div>
                             </div>
+
+                            <!-- Description du Risque -->
+                            <div class="text-gray-600 mb-8 text-lg leading-relaxed">
+                                [[ prediction.risk_description ]]
+                            </div>
+
+                            <!-- Probabilité -->
+                            <div class="mb-8">
+                                <div class="progress-bar">
+                                    <div :class="[
+                                        'progress-bar-fill',
+                                        prediction.risk_level === 'Élevé' ? 'bg-red-500' :
+                                        prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500'
+                                    ]" :style="{ width: prediction.probability + '%' }"></div>
+                                </div>
+                                <div class="text-center text-gray-600 mt-3">
+                                    Probabilité : [[ prediction.probability ]]%
+                                </div>
+                            </div>
+
+                            <!-- Facteurs de Risque -->
+                            <div v-if="prediction.risk_factors && prediction.risk_factors.length" class="mb-8">
+                                <h4 class="text-xl font-semibold mb-6 text-gray-800">Facteurs de Risque Identifiés</h4>
+                                <div class="grid gap-4">
+                                    <div v-for="factor in prediction.risk_factors" :key="factor.name" 
+                                         class="card-hover"
+                                         :class="[
+                                             'p-6 rounded-xl',
+                                             factor.severity === 'high' ? 'bg-red-50' :
+                                             factor.severity === 'medium' ? 'bg-yellow-50' : 'bg-green-50'
+                                         ]">
+                                        <h5 class="font-semibold text-lg mb-3"
+                                            :class="[
+                                                factor.severity === 'high' ? 'text-red-700' :
+                                                factor.severity === 'medium' ? 'text-yellow-700' : 'text-green-700'
+                                            ]">
+                                            [[ factor.name ]]
+                                        </h5>
+                                        <p class="text-gray-700 leading-relaxed">[[ factor.description ]]</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="mt-8 space-y-4">
+                                <button type="button"
+                                        @click="resetAll"
+                                        class="block w-full btn-primary">
+                                    Nouvelle analyse
+                                </button>
+                                <button type="button"
+                                        v-if="prediction"
+                                        @click="downloadReport"
+                                        class="block w-full btn-secondary">
+                                    <span class="flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        Télécharger le PDF
+                                    </span>
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Boutons d'action -->
-                        <div class="mt-6">
-                            <button type="button"
-                                    @click="resetAll"
-                                    class="mb-4 block w-full bg-blue-500 hover:bg-blue-600 text-white text-center py-3 px-4 rounded-lg cursor-pointer">
-                                Nouvelle analyse
-                            </button>
-                            <button type="button"
-                                    v-if="prediction"
-                                    @click="downloadReport"
-                                    class="block w-full bg-green-500 hover:bg-green-600 text-white text-center py-3 px-4 rounded-lg cursor-pointer">
-                                <span class="flex items-center justify-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    Télécharger le PDF
-                                </span>
-                            </button>
-                        </div>
-
-                    </div>
-
-                    <!-- Recommandations -->
-                    <div v-if="prediction && prediction.recommendations" class="bg-blue-50 rounded-lg p-4 sm:p-6">
-                        <h4 class="font-semibold mb-3 text-lg text-blue-800">Plan d'Action Recommandé</h4>
-                        <div class="space-y-6">
-                            <div v-for="(rec, index) in prediction.recommendations" :key="index" class="text-sm sm:text-base">
-                                <h5 class="font-medium text-blue-700 mb-3">[[ rec.title ]]</h5>
-                                <ul class="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                                    <li v-for="(item, itemIndex) in rec.items" :key="itemIndex" class="leading-relaxed">
-                                        [[ item ]]
-                                    </li>
-                                </ul>
+                        <!-- Recommandations -->
+                        <div v-if="prediction && prediction.recommendations" class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 sm:p-8">
+                            <h4 class="text-xl font-semibold mb-6 text-blue-800">Plan d'Action Recommandé</h4>
+                            <div class="space-y-8">
+                                <div v-for="(rec, index) in prediction.recommendations" :key="index" class="card-hover bg-white rounded-lg p-6">
+                                    <h5 class="font-medium text-blue-700 text-lg mb-4">[[ rec.title ]]</h5>
+                                    <ul class="space-y-3">
+                                        <li v-for="(item, itemIndex) in rec.items" :key="itemIndex" 
+                                            class="flex items-start">
+                                            <span class="text-blue-500 mr-3">
+                                                <i class="fas fa-check-circle"></i>
+                                            </span>
+                                            <span class="text-gray-700">[[ item ]]</span>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -452,29 +572,37 @@
         </section>
 
         <!-- About Section -->
-        <section id="about" class="py-16 bg-gray-100">
-            <div class="container mx-auto px-6">
-                <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">À Propos</h2>
-                <div class="max-w-3xl mx-auto text-center">
-                    <p class="text-lg text-gray-600 mb-8">
-                        Notre système utilise des algorithmes d'intelligence artificielle avancés pour évaluer les risques de santé 
-                        et fournir des recommandations personnalisées basées sur vos données médicales.
-                    </p>
+        <section id="about" class="py-20 bg-gradient-to-b from-gray-50 to-white">
+            <div class="container mx-auto px-4 sm:px-6">
+                <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16 text-gray-800">À Propos</h2>
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-16">
+                        <p class="text-xl text-gray-600 leading-relaxed">
+                            Notre système utilise des algorithmes d'intelligence artificielle avancés pour évaluer les risques de santé 
+                            et fournir des recommandations personnalisées basées sur vos données médicales.
+                        </p>
+                    </div>
                     <div class="grid md:grid-cols-3 gap-8">
-                        <div class="bg-white p-6 rounded-xl shadow">
-                            <i class="fas fa-brain text-blue-600 text-3xl mb-4"></i>
-                            <h3 class="text-xl font-semibold mb-2">IA Avancée</h3>
-                            <p class="text-gray-600">Algorithmes de machine learning pour des prédictions précises</p>
+                        <div class="card-hover bg-white p-8 rounded-2xl shadow-lg text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-brain text-blue-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">IA Avancée</h3>
+                            <p class="text-gray-600">Algorithmes de machine learning pour des prédictions précises et fiables</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow">
-                            <i class="fas fa-shield-alt text-blue-600 text-3xl mb-4"></i>
-                            <h3 class="text-xl font-semibold mb-2">Sécurisé</h3>
-                            <p class="text-gray-600">Vos données sont traitées de manière confidentielle</p>
+                        <div class="card-hover bg-white p-8 rounded-2xl shadow-lg text-center">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-shield-alt text-green-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Sécurisé</h3>
+                            <p class="text-gray-600">Vos données sont traitées de manière confidentielle et sécurisée</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow">
-                            <i class="fas fa-chart-bar text-blue-600 text-3xl mb-4"></i>
-                            <h3 class="text-xl font-semibold mb-2">Précis</h3>
-                            <p class="text-gray-600">Résultats basés sur des données médicales validées</p>
+                        <div class="card-hover bg-white p-8 rounded-2xl shadow-lg text-center">
+                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-chart-bar text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Précis</h3>
+                            <p class="text-gray-600">Résultats basés sur des données médicales validées et à jour</p>
                         </div>
                     </div>
                 </div>
