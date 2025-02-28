@@ -39,7 +39,7 @@
     <div class="flex-1 flex justify-center space-x-8">
         <a href="#" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
         <a href="#about" class="text-gray-600 hover:text-blue-600 transition">À propos</a>
-        <a href="#contact" class="text-gray-600 hover:text-blue-600 transition">Blog</a>
+        <a href="{{ url_for('blog') }}" class="text-gray-600 hover:text-blue-600 transition">Blog</a>
     </div>
 
     <!-- Boutons à droite -->
@@ -68,7 +68,7 @@
                 <div v-show="isMobileMenuOpen" class="md:hidden mt-4 py-2 space-y-4" v-cloak>
                     <a href="#" class="block text-gray-600 hover:text-blue-600 transition py-2">Accueil</a>
                     <a href="#about" class="block text-gray-600 hover:text-blue-600 transition py-2">À propos</a>
-                    <a href="#contact" class="block text-gray-600 hover:text-blue-600 transition py-2">Blog</a>
+                    <a href="{{ url_for('blog') }}" class="block text-gray-600 hover:text-blue-600 transition py-2">Blog</a>
                     <template v-if="!isAuthenticated">
                         <button @click="showLoginModal = true" class="block w-full text-left text-blue-600 hover:text-blue-800 font-medium py-2">Connexion</button>
                         <button @click="showRegisterModal = true" class="block w-full text-left text-blue-600 hover:text-blue-800 font-medium py-2">Inscription</button>
