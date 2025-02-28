@@ -667,7 +667,14 @@ def blog():
     page = request.args.get('page', 1, type=int)
     result = get_blog_posts(page=page)
     if result is None:
-        return render_template('blog.html', posts=[], total=0, pages=1, current_page=1)
+        return render_template('blog.html', 
+                             posts=[], 
+                             total=0, 
+                             pages=1, 
+                             current_page=1,
+                             is_authenticated=is_authenticated())
+    
+    result['is_authenticated'] = is_authenticated()
     return render_template('blog.html', **result)
 
 @app.route('/blog/post/<post_id>')
@@ -675,7 +682,7 @@ def view_post(post_id):
     post = get_blog_post(post_id)
     if not post:
         return redirect(url_for('blog'))
-    return render_template('blog_post.html', post=post)
+    return render_template('blog_post.html', post=post, is_authenticated=is_authenticated())
 
 @app.route('/blog/new', methods=['GET', 'POST'])
 def new_post():
@@ -694,7 +701,7 @@ def new_post():
         )
         return jsonify({'success': success, 'post_id': post_id})
     
-    return render_template('blog_editor.html')
+    return render_template('blog_editor.html', is_authenticated=is_authenticated())
 
 @app.route('/blog/edit/<post_id>', methods=['GET', 'POST'])
 def edit_post(post_id):
