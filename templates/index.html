@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediPredict | Accueil | Système de Prédiction Médical</title>
-    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Optimisation du chargement des ressources -->
+    <link rel="preload" href="https://cdn.tailwindcss.com/3.4.1" as="script">
+    <link rel="preload" href="https://unpkg.com/vue@3/dist/vue.global.prod.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" as="script">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+    
+    <!-- Chargement des scripts -->
+    <script src="https://cdn.tailwindcss.com/3.4.1" defer></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Configuration de la sécurité -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:;">
+    
+    <!-- Cache-Control -->
+    <meta http-equiv="Cache-Control" content="public, max-age=31536000">
     <style>
         [v-cloak] {
             display: none;
@@ -697,359 +710,351 @@
     </div>
 
     <script>
-        const { createApp } = Vue
-
-        createApp({
-            delimiters: ['[[', ']]'],
-            data() {
-                return {
-                    isMobileMenuOpen: false,
-                    showLoginModal: false,
-                    showRegisterModal: false,
-                    isAuthenticated: {{ 'true' if is_authenticated else 'false' }},
-                    userName: '{{ session.user_name if session.user_name else "" }}',
-                    loginForm: {
-                        email: '',
-                        password: ''
-                    },
-                    registerForm: {
-                        name: '',
-                        email: '',
-                        password: ''
-                    },
-                    activeTab: 'prediction',
-                    isLoading: false,
-                    lastPredictionType: null,
-                    notification: {
-                        show: false,
-                        message: '',
-                        type: 'success'
-                    },
-                    history: [],
-                    statistics: null,
-                    prediction: null,
-                    formData: {
-                        diabetes: {
-                            glucose: '',
-                            age: '',
-                            bmi: ''
+        document.addEventListener('DOMContentLoaded', function() {
+            const { createApp } = Vue;
+            const app = createApp({
+                delimiters: ['[[', ']]'],
+                data() {
+                    return {
+                        isMobileMenuOpen: false,
+                        showLoginModal: false,
+                        showRegisterModal: false,
+                        isAuthenticated: {{ 'true' if is_authenticated else 'false' }},
+                        userName: '{{ session.user_name if session.user_name else "" }}',
+                        loginForm: {
+                            email: '',
+                            password: ''
                         },
-                        hypertension: {
-                            systolic: '',
-                            diastolic: '',
-                            age: ''
+                        registerForm: {
+                            name: '',
+                            email: '',
+                            password: ''
                         },
-                        cardiovascular: {
-                            heart_rate: '',
-                            cholesterol: '',
-                            age: ''
-                        }
-                    },
-                    commentContent: '',
-                    isSubmitting: false
-                }
-            },
-            mounted() {
-                this.loadHistory()
-                this.loadStatistics()
-            },
-            methods: {
-                showNotification(message, type = 'success') {
-                    this.notification = {
-                        show: true,
-                        type: type,
-                        message: message
-                    }
-                    setTimeout(() => {
-                        this.notification.show = false
-                    }, 5000)
-                },
-                async loadHistory() {
-                    try {
-                        const response = await fetch('/history')
-                        if (response.ok) {
-                            this.history = await response.json()
-                        } else {
-                            throw new Error('Erreur lors du chargement de l\'historique')
-                        }
-                    } catch (error) {
-                        console.error('Erreur:', error)
-                        this.showNotification('Erreur lors du chargement de l\'historique', 'error')
-                    }
-                },
-                async loadStatistics() {
-                    try {
-                        const response = await fetch('/statistics')
-                        if (response.ok) {
-                            this.statistics = await response.json()
-                        } else {
-                            throw new Error('Erreur lors du chargement des statistiques')
-                        }
-                    } catch (error) {
-                        console.error('Erreur:', error)
-                        this.showNotification('Erreur lors du chargement des statistiques', 'error')
-                    }
-                },
-                async predict(diseaseType) {
-                    if (!this.isAuthenticated) {
-                        this.showNotification('Veuillez vous connecter pour faire une prédiction', 'error');
-                        this.showLoginModal = true;
-                        return;
-                    }
-
-                    try {
-                        this.isLoading = true;
-                        const formData = this.formData[diseaseType];
-                        
-                        // Vérifier que toutes les valeurs sont présentes
-                        const hasEmptyValues = Object.values(formData).some(value => value === '');
-                        if (hasEmptyValues) {
-                            throw new Error('Veuillez remplir tous les champs');
-                        }
-
-                        // Convertir les valeurs en nombres
-                        const input_data = {};
-                        for (const [key, value] of Object.entries(formData)) {
-                            const numValue = parseFloat(value);
-                            if (isNaN(numValue)) {
-                                throw new Error(`La valeur pour ${key} n'est pas un nombre valide`);
+                        activeTab: 'prediction',
+                        isLoading: false,
+                        lastPredictionType: null,
+                        notification: {
+                            show: false,
+                            message: '',
+                            type: 'success'
+                        },
+                        history: [],
+                        statistics: null,
+                        prediction: null,
+                        formData: {
+                            diabetes: {
+                                glucose: '',
+                                age: '',
+                                bmi: ''
+                            },
+                            hypertension: {
+                                systolic: '',
+                                diastolic: '',
+                                age: ''
+                            },
+                            cardiovascular: {
+                                heart_rate: '',
+                                cholesterol: '',
+                                age: ''
                             }
-                            input_data[key] = numValue;
+                        },
+                        commentContent: '',
+                        isSubmitting: false
+                    }
+                },
+                mounted() {
+                    this.loadHistory()
+                    this.loadStatistics()
+                },
+                methods: {
+                    showNotification(message, type = 'success') {
+                        this.notification = {
+                            show: true,
+                            type: type,
+                            message: message
                         }
-
-                        // Créer l'objet de requête avec la structure correcte
-                        const requestData = {
-                            disease_type: diseaseType,
-                            input_data: input_data  // Utiliser input_data au lieu de data
-                        };
-
-                        console.log('Données à envoyer:', JSON.stringify(requestData));
-
-                        const response = await axios.post('/predict', requestData);
-                        
-                        if (response.data.success) {
-                            this.prediction = response.data;
-                            this.lastPredictionType = diseaseType;
-                            this.showNotification('Prédiction effectuée avec succès', 'success');
-                            this.loadHistory();
-                        } else {
-                            throw new Error(response.data.message);
+                        setTimeout(() => {
+                            this.notification.show = false
+                        }, 5000)
+                    },
+                    async loadHistory() {
+                        try {
+                            const response = await fetch('/history')
+                            if (response.ok) {
+                                this.history = await response.json()
+                            } else {
+                                throw new Error('Erreur lors du chargement de l\'historique')
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error)
+                            this.showNotification('Erreur lors du chargement de l\'historique', 'error')
                         }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        this.showNotification(error.response?.data?.message || error.message, 'error');
-                    } finally {
-                        this.isLoading = false;
-                    }
-                },
-                async downloadReport() {
-                    try {
-                        const response = await axios.get(`/download_report/${this.lastPredictionType}`, {
-                            responseType: 'blob'
-                        });
-                        
-                        const blob = new Blob([response.data], { type: 'application/pdf' });
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `rapport_${this.lastPredictionType}_${new Date().toISOString().split('T')[0]}.pdf`;
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        
-                        this.showNotification('Rapport PDF téléchargé avec succès', 'success');
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        this.showNotification('Erreur lors du téléchargement du rapport', 'error');
-                    }
-                },
-                async generateReport(predictionData) {
-                    try {
-                        const response = await axios.post('/generate_report', predictionData, {
-                            responseType: 'blob'
-                        })
-                        
-                        // Créer un URL pour le blob
-                        const url = window.URL.createObjectURL(new Blob([response.data]))
-                        
-                        // Créer un lien temporaire pour le téléchargement
-                        const link = document.createElement('a')
-                        link.href = url
-                        link.setAttribute('download', `rapport_medical_${new Date().toISOString().split('T')[0]}.pdf`)
-                        document.body.appendChild(link)
-                        
-                        // Déclencher le téléchargement
-                        link.click()
-                        
-                        // Nettoyer
-                        window.URL.revokeObjectURL(url)
-                        document.body.removeChild(link)
-                        
-                        this.showNotification('Rapport généré avec succès', 'success')
-                    } catch (error) {
-                        console.error('Erreur:', error)
-                        this.showNotification('Erreur lors de la génération du rapport', 'error')
-                    }
-                },
-                async generateStatisticsReport() {
-                    try {
-                        const response = await fetch('/statistics_report')
-                        
-                        if (response.ok) {
-                            const blob = await response.blob()
-                            const url = window.URL.createObjectURL(blob)
-                            const a = document.createElement('a')
-                            a.href = url
-                            a.download = 'rapport_statistique.pdf'
-                            document.body.appendChild(a)
-                            a.click()
-                            window.URL.revokeObjectURL(url)
-                            a.remove()
-                        } else {
-                            throw new Error('Erreur lors de la génération du rapport statistique')
+                    },
+                    async loadStatistics() {
+                        try {
+                            const response = await fetch('/statistics')
+                            if (response.ok) {
+                                this.statistics = await response.json()
+                            } else {
+                                throw new Error('Erreur lors du chargement des statistiques')
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error)
+                            this.showNotification('Erreur lors du chargement des statistiques', 'error')
                         }
-                    } catch (error) {
-                        console.error('Erreur:', error)
-                        this.showNotification('Erreur lors de la génération du rapport statistique', 'error')
-                    }
-                },
-                newPrediction() {
-                    // Réinitialiser les données
-                    this.prediction = null;
-                    this.isLoading = false;
-                    this.formData = {
-                        diabetes: { glucose: '', age: '', bmi: '' },
-                        hypertension: { systolic: '', diastolic: '', age: '' },
-                        cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
-                    };
-                },
-                resetAll() {
-                    // Réinitialiser toutes les données
-                    this.prediction = null;
-                    this.lastPredictionType = '';
-                    this.isLoading = false;
-                    this.formData = {
-                        diabetes: { glucose: '', age: '', bmi: '' },
-                        hypertension: { systolic: '', diastolic: '', age: '' },
-                        cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
-                    };
-                    // Recharger la page pour un nouveau départ
-                    window.location.reload();
-                },
-                resetPrediction() {
-                    this.prediction = null;
-                    this.isLoading = false;
-                    this.formData = {
-                        diabetes: { glucose: '', age: '', bmi: '' },
-                        hypertension: { systolic: '', diastolic: '', age: '' },
-                        cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
-                    };
-                },
-                toggleMenu() {
-                    this.isMobileMenuOpen = !this.isMobileMenuOpen
-                },
-                async login() {
-                    try {
-                        const response = await fetch('/login', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(this.loginForm)
-                        });
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            this.showNotification(data.message, 'success');
-                            this.showLoginModal = false;
-                            window.location.reload();
-                        } else {
-                            this.showNotification(data.message, 'error');
-                        }
-                    } catch (error) {
-                        this.showNotification('Erreur lors de la connexion', 'error');
-                    }
-                },
-                async register() {
-                    try {
-                        const response = await fetch('/register', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(this.registerForm)
-                        });
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            this.showNotification(data.message, 'success');
+                    },
+                    async predict(diseaseType) {
+                        if (!this.isAuthenticated) {
+                            this.showNotification('Veuillez vous connecter pour faire une prédiction', 'error');
                             this.showLoginModal = true;
-                            this.showRegisterModal = false;
-                        } else {
-                            this.showNotification(data.message, 'error');
+                            return;
                         }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        this.showNotification('Erreur lors de l\'inscription', 'error');
-                    }
-                },
-                async submitComment() {
-                    if (!this.commentContent.trim()) {
-                        this.showNotification('Le commentaire ne peut pas être vide', 'error');
-                        return;
-                    }
-                    
-                    this.isSubmitting = true;
-                    
-                    try {
-                        const response = await fetch('/add_site_comment', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                content: this.commentContent
+
+                        try {
+                            this.isLoading = true;
+                            const formData = this.formData[diseaseType];
+                            
+                            if (Object.values(formData).some(value => value === '')) {
+                                throw new Error('Veuillez remplir tous les champs');
+                            }
+
+                            const input_data = Object.fromEntries(
+                                Object.entries(formData).map(([key, value]) => [key, parseFloat(value)])
+                            );
+
+                            const response = await axios.post('/predict', {
+                                disease_type: diseaseType,
+                                input_data
+                            });
+                            
+                            if (response.data.success) {
+                                this.prediction = response.data;
+                                this.lastPredictionType = diseaseType;
+                                this.showNotification('Prédiction effectuée avec succès', 'success');
+                                this.loadHistory();
+                            } else {
+                                throw new Error(response.data.message);
+                            }
+                        } catch (error) {
+                            this.showNotification(error.response?.data?.message || error.message, 'error');
+                        } finally {
+                            this.isLoading = false;
+                        }
+                    },
+                    async downloadReport() {
+                        try {
+                            const response = await axios.get(`/download_report/${this.lastPredictionType}`, {
+                                responseType: 'blob'
+                            });
+                            
+                            const blob = new Blob([response.data], { type: 'application/pdf' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `rapport_${this.lastPredictionType}_${new Date().toISOString().split('T')[0]}.pdf`;
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            
+                            this.showNotification('Rapport PDF téléchargé avec succès', 'success');
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            this.showNotification('Erreur lors du téléchargement du rapport', 'error');
+                        }
+                    },
+                    async generateReport(predictionData) {
+                        try {
+                            const response = await axios.post('/generate_report', predictionData, {
+                                responseType: 'blob'
                             })
-                        });
-                        
-                        const data = await response.json();
-                        if (data.success) {
-                            this.showNotification('Commentaire publié avec succès', 'success');
-                            this.commentContent = '';
-                            window.location.reload();
-                        } else {
-                            this.showNotification(data.message || 'Erreur lors de l\'ajout du commentaire', 'error');
+                            
+                            // Créer un URL pour le blob
+                            const url = window.URL.createObjectURL(new Blob([response.data]))
+                            
+                            // Créer un lien temporaire pour le téléchargement
+                            const link = document.createElement('a')
+                            link.href = url
+                            link.setAttribute('download', `rapport_medical_${new Date().toISOString().split('T')[0]}.pdf`)
+                            document.body.appendChild(link)
+                            
+                            // Déclencher le téléchargement
+                            link.click()
+                            
+                            // Nettoyer
+                            window.URL.revokeObjectURL(url)
+                            document.body.removeChild(link)
+                            
+                            this.showNotification('Rapport généré avec succès', 'success')
+                        } catch (error) {
+                            console.error('Erreur:', error)
+                            this.showNotification('Erreur lors de la génération du rapport', 'error')
                         }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        this.showNotification('Erreur lors de l\'ajout du commentaire', 'error');
-                    } finally {
-                        this.isSubmitting = false;
-                    }
-                },
-                async deleteComment(commentId) {
-                    if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
-                        return;
-                    }
-                    
-                    try {
-                        const response = await fetch(`/delete_site_comment/${commentId}`, {
-                            method: 'DELETE'
-                        });
-                        
-                        const data = await response.json();
-                        if (data.success) {
-                            this.showNotification('Commentaire supprimé avec succès', 'success');
-                            window.location.reload();
-                        } else {
-                            this.showNotification(data.message || 'Erreur lors de la suppression du commentaire', 'error');
+                    },
+                    async generateStatisticsReport() {
+                        try {
+                            const response = await fetch('/statistics_report')
+                            
+                            if (response.ok) {
+                                const blob = await response.blob()
+                                const url = window.URL.createObjectURL(blob)
+                                const a = document.createElement('a')
+                                a.href = url
+                                a.download = 'rapport_statistique.pdf'
+                                document.body.appendChild(a)
+                                a.click()
+                                window.URL.revokeObjectURL(url)
+                                a.remove()
+                            } else {
+                                throw new Error('Erreur lors de la génération du rapport statistique')
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error)
+                            this.showNotification('Erreur lors de la génération du rapport statistique', 'error')
                         }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        this.showNotification('Erreur lors de la suppression du commentaire', 'error');
+                    },
+                    newPrediction() {
+                        // Réinitialiser les données
+                        this.prediction = null;
+                        this.isLoading = false;
+                        this.formData = {
+                            diabetes: { glucose: '', age: '', bmi: '' },
+                            hypertension: { systolic: '', diastolic: '', age: '' },
+                            cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
+                        };
+                    },
+                    resetAll() {
+                        // Réinitialiser toutes les données
+                        this.prediction = null;
+                        this.lastPredictionType = '';
+                        this.isLoading = false;
+                        this.formData = {
+                            diabetes: { glucose: '', age: '', bmi: '' },
+                            hypertension: { systolic: '', diastolic: '', age: '' },
+                            cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
+                        };
+                        // Recharger la page pour un nouveau départ
+                        window.location.reload();
+                    },
+                    resetPrediction() {
+                        this.prediction = null;
+                        this.isLoading = false;
+                        this.formData = {
+                            diabetes: { glucose: '', age: '', bmi: '' },
+                            hypertension: { systolic: '', diastolic: '', age: '' },
+                            cardiovascular: { heart_rate: '', cholesterol: '', age: '' }
+                        };
+                    },
+                    toggleMenu() {
+                        this.isMobileMenuOpen = !this.isMobileMenuOpen
+                    },
+                    async login() {
+                        try {
+                            const response = await fetch('/login', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(this.loginForm)
+                            });
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                this.showNotification(data.message, 'success');
+                                this.showLoginModal = false;
+                                window.location.reload();
+                            } else {
+                                this.showNotification(data.message, 'error');
+                            }
+                        } catch (error) {
+                            this.showNotification('Erreur lors de la connexion', 'error');
+                        }
+                    },
+                    async register() {
+                        try {
+                            const response = await fetch('/register', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(this.registerForm)
+                            });
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                this.showNotification(data.message, 'success');
+                                this.showLoginModal = true;
+                                this.showRegisterModal = false;
+                            } else {
+                                this.showNotification(data.message, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            this.showNotification('Erreur lors de l\'inscription', 'error');
+                        }
+                    },
+                    async submitComment() {
+                        if (!this.commentContent.trim()) {
+                            this.showNotification('Le commentaire ne peut pas être vide', 'error');
+                            return;
+                        }
+                        
+                        this.isSubmitting = true;
+                        
+                        try {
+                            const response = await fetch('/add_site_comment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    content: this.commentContent
+                                })
+                            });
+                            
+                            const data = await response.json();
+                            if (data.success) {
+                                this.showNotification('Commentaire publié avec succès', 'success');
+                                this.commentContent = '';
+                                window.location.reload();
+                            } else {
+                                this.showNotification(data.message || 'Erreur lors de l\'ajout du commentaire', 'error');
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            this.showNotification('Erreur lors de l\'ajout du commentaire', 'error');
+                        } finally {
+                            this.isSubmitting = false;
+                        }
+                    },
+                    async deleteComment(commentId) {
+                        if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+                            return;
+                        }
+                        
+                        try {
+                            const response = await fetch(`/delete_site_comment/${commentId}`, {
+                                method: 'DELETE'
+                            });
+                            
+                            const data = await response.json();
+                            if (data.success) {
+                                this.showNotification('Commentaire supprimé avec succès', 'success');
+                                window.location.reload();
+                            } else {
+                                this.showNotification(data.message || 'Erreur lors de la suppression du commentaire', 'error');
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            this.showNotification('Erreur lors de la suppression du commentaire', 'error');
+                        }
                     }
                 }
-            }
-        }).mount('#app')
+            });
+
+            // Montage différé de l'application
+            requestAnimationFrame(() => {
+                app.mount('#app');
+            });
+        });
     </script>
 </body>
 </html>
