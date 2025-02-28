@@ -128,23 +128,27 @@
 
         /* Style pour les champs de formulaire */
         .form-input {
-            @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300 bg-white hover:border-blue-400;
+            @apply w-full px-6 py-4 text-lg rounded-xl border-2 focus:ring-2 transition-all duration-300 bg-white;
+            @apply placeholder-gray-400 text-gray-700;
+            @apply shadow-sm hover:shadow-md;
         }
         
         .form-input-diabetes {
-            @apply focus:border-blue-500 focus:ring-blue-200 hover:border-blue-400;
+            @apply border-blue-200 focus:border-blue-500 focus:ring-blue-200 hover:border-blue-300;
         }
         
         .form-input-hypertension {
-            @apply focus:border-red-500 focus:ring-red-200 hover:border-red-400;
+            @apply border-red-200 focus:border-red-500 focus:ring-red-200 hover:border-red-300;
         }
         
         .form-input-cardio {
-            @apply focus:border-purple-500 focus:ring-purple-200 hover:border-purple-400;
+            @apply border-purple-200 focus:border-purple-500 focus:ring-purple-200 hover:border-purple-300;
         }
         
         .prediction-button {
-            @apply w-full py-4 px-6 rounded-xl font-semibold text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2;
+            @apply w-full py-5 px-8 rounded-xl font-semibold text-lg text-white transform transition-all duration-300;
+            @apply shadow-lg hover:shadow-xl flex items-center justify-center space-x-4;
+            @apply disabled:opacity-50 disabled:cursor-not-allowed;
         }
         
         .prediction-button-diabetes {
@@ -160,69 +164,28 @@
         }
         
         .form-group {
-            @apply transform hover:scale-102 transition-all duration-200 p-6 rounded-xl bg-white shadow-sm hover:shadow-md;
+            @apply transform transition-all duration-200 p-8 rounded-xl bg-white shadow-sm hover:shadow-md;
+            @apply mb-6;
         }
         
         .form-label {
-            @apply block text-gray-700 font-medium mb-3 flex items-center space-x-3 text-lg transition-colors duration-200;
+            @apply block text-gray-700 font-semibold mb-4 flex items-center space-x-4 text-xl;
+            @apply transition-colors duration-200;
         }
         
         .form-icon {
-            @apply w-6 h-6 opacity-70;
+            @apply w-8 h-8 opacity-80;
         }
 
-        /* Style pour les formulaires */
-        .form-group {
-            @apply transform hover:scale-102 transition-all duration-200 p-6 rounded-xl bg-white shadow-sm hover:shadow-md;
+        /* Messages d'erreur */
+        .error-message {
+            @apply mt-3 text-sm text-red-600 font-medium;
         }
 
-        .form-label {
-            @apply block text-gray-700 font-medium mb-3 flex items-center space-x-3 text-lg transition-colors duration-200;
-        }
-
-        .form-input {
-            @apply w-full px-4 py-3.5 rounded-xl border-2 focus:ring-2 transition-all duration-300 bg-white;
-            @apply placeholder-gray-400 text-gray-700;
-        }
-
-        .form-input-diabetes {
-            @apply border-blue-200 focus:border-blue-500 focus:ring-blue-200 hover:border-blue-300;
-        }
-
-        .form-input-hypertension {
-            @apply border-red-200 focus:border-red-500 focus:ring-red-200 hover:border-red-300;
-        }
-
-        .form-input-cardio {
-            @apply border-purple-200 focus:border-purple-500 focus:ring-purple-200 hover:border-purple-300;
-        }
-
-        /* Style pour les boutons */
-        .prediction-button {
-            @apply w-full py-4 px-6 rounded-xl font-semibold text-white transform transition-all duration-300;
-            @apply shadow-lg hover:shadow-xl flex items-center justify-center space-x-3;
-            @apply disabled:opacity-50 disabled:cursor-not-allowed;
-        }
-
-        .prediction-button-diabetes {
-            @apply bg-gradient-to-r from-blue-500 to-blue-600;
-            @apply hover:from-blue-600 hover:to-blue-700 hover:scale-102;
-        }
-
-        .prediction-button-hypertension {
-            @apply bg-gradient-to-r from-red-500 to-red-600;
-            @apply hover:from-red-600 hover:to-red-700 hover:scale-102;
-        }
-
-        .prediction-button-cardio {
-            @apply bg-gradient-to-r from-purple-500 to-purple-600;
-            @apply hover:from-purple-600 hover:to-purple-700 hover:scale-102;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .prediction-grid {
-                @apply grid-cols-1 gap-8 px-4;
+        /* Responsive Design amélioré */
+        @media (max-width: 640px) {
+            .form-input {
+                @apply px-4 py-3.5 text-base;
             }
             
             .form-group {
@@ -230,42 +193,36 @@
             }
             
             .form-label {
-                @apply text-base mb-2;
+                @apply text-lg mb-3;
+            }
+            
+            .form-icon {
+                @apply w-6 h-6;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 768px) {
+            .form-input {
+                @apply px-5 py-4 text-lg;
+            }
+            
+            .form-group {
+                @apply p-6;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .prediction-grid {
+                @apply gap-8;
+            }
+            
+            .form-group {
+                @apply p-8;
             }
             
             .form-input {
-                @apply py-3 px-3;
+                @apply text-lg;
             }
-            
-            .prediction-button {
-                @apply py-3.5;
-            }
-        }
-
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .prediction-grid {
-                @apply grid-cols-2 gap-6;
-            }
-        }
-
-        @media (min-width: 1025px) {
-            .prediction-grid {
-                @apply grid-cols-3 gap-8;
-            }
-        }
-
-        /* Animations et transitions */
-        .form-group, .prediction-button {
-            @apply transform-gpu;
-        }
-
-        .form-input:focus {
-            @apply scale-102 transition-transform;
-        }
-
-        /* Loading spinner amélioré */
-        .spinner {
-            @apply animate-spin rounded-full h-5 w-5 border-3 border-white border-t-transparent;
         }
     </style>
 </head>
