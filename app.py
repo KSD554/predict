@@ -104,7 +104,7 @@ models, scalers = initialize_models()
 @app.route('/')
 def index():
     try:
-        predictions_count = len(list(predictions.find())) if predictions else 0
+        predictions_count = predictions.count_documents({})
         comments = get_site_comments()
         return render_template('index.html', 
                              predictions_count=predictions_count,
