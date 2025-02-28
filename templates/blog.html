@@ -68,7 +68,10 @@
                     <span class="block text-gray-600 py-2">{{ session.user_name }}</span>
                     <a href="{{ url_for('logout') }}" class="block text-red-600 hover:text-red-800 py-2">Déconnexion</a>
                     {% else %}
-                    <button @click="showLoginModal = true" class="block w-full text-left text-blue-600 hover:text-blue-800 py-2">Connexion</button>
+                    <div class="space-y-4 border-t border-gray-200 pt-4">
+                        <button @click="showLoginModal = true" class="block w-full text-center bg-blue-600 text-white py-3 mb-3 rounded-lg hover:bg-blue-700 transition">Se connecter</button>
+                        <button @click="showRegisterModal = true" class="block w-full text-center border border-blue-600 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition">S'inscrire</button>
+                    </div>
                     {% endif %}
                 </div>
             </nav>
