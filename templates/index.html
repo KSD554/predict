@@ -387,409 +387,267 @@
         </section>
 
         <!-- Prediction Section -->
-        <section id="prediction" class="py-16 sm:py-24 bg-gray-50">
+        <section id="prediction" class="py-12 sm:py-16">
             <div class="container mx-auto px-4 sm:px-6">
-                <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12 text-gray-800">Évaluation des Risques</h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-800">Évaluation des Risques</h2>
                 
                 <!-- Messages de notification -->
-                <transition name="notification">
-                    <div v-if="notification.show" 
-                         :class="['mb-6 p-4 rounded-lg text-white text-center transform transition-all duration-300', 
-                         notification.type === 'success' ? 'bg-green-500' : 'bg-red-500']"
-                         v-cloak>
-                        <span v-text="notification.message"></span>
-                    </div>
-                </transition>
-
-                <!-- Message pour les utilisateurs non connectés -->
-                <div v-if="!isAuthenticated" class="text-center py-12">
-                    <div class="glass-effect rounded-2xl p-8 max-w-2xl mx-auto bg-white bg-opacity-90 shadow-xl">
-                        <i class="fas fa-lock text-blue-500 text-5xl mb-6"></i>
-                        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Accès Restreint</h3>
-                        <p class="text-gray-600 text-lg mb-8">Pour accéder aux prédictions de santé, veuillez vous connecter ou créer un compte.</p>
-                        <div class="space-x-4">
-                            <button @click="showLoginModal = true" 
-                                    class="btn-primary">
-                                Se connecter
-                            </button>
-                            <button @click="showRegisterModal = true" 
-                                    class="btn-secondary">
-                                S'inscrire
-                            </button>
-                        </div>
-                    </div>
+                <div v-if="notification.show" :class="['mb-6 p-4 rounded-lg text-white text-center transition-all', 
+                    notification.type === 'success' ? 'bg-green-500' : 'bg-red-500']"
+                    v-cloak>
+                    <span v-text="notification.message"></span>
                 </div>
 
-                <!-- Section de prédiction pour les utilisateurs connectés -->
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 prediction-grid">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     <!-- Carte Diabète -->
-                    <div class="prediction-card group">
-                        <div class="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-blue-500 to-blue-600 p-6">
-                            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400 rounded-full opacity-20 transform rotate-12"></div>
-                            <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-300 rounded-full opacity-20"></div>
-                            <div class="flex items-center relative z-10">
-                                <div class="w-16 h-16 flex items-center justify-center rounded-full bg-white bg-opacity-20 backdrop-blur-sm mr-4">
-                                    <i class="fas fa-chart-line text-white text-2xl"></i>
-                                </div>
-                                <h3 class="text-2xl font-bold text-white">Diabète</h3>
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-chart-line text-blue-600 text-2xl mr-3"></i>
+                            <h3 class="text-xl font-semibold text-gray-800">Diabète</h3>
+                        </div>
+                        <form @submit.prevent="predict('diabetes', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="glucose">
+                                    Glycémie (mg/dL)
+                                </label>
+                                <input v-model="formData.diabetes.glucose"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="70"
+                                       max="400"
+                                       step="1">
                             </div>
-                        </div>
-                        <div class="p-8 space-y-6 bg-white rounded-b-xl">
-                            <form @submit.prevent="predict('diabetes')" class="space-y-6" novalidate>
-                                <div class="form-group diabetes">
-                                    <label for="glucose" class="form-label">
-                                        <i class="fas fa-tint form-icon text-blue-500"></i>
-                                        <span>Glycémie (mg/dL)</span>
-                                    </label>
-                                    <input v-model.number="formData.diabetes.glucose"
-                                           type="number"
-                                           id="glucose"
-                                           class="form-input form-input-diabetes"
-                                           required
-                                           min="70"
-                                           max="400"
-                                           step="1"
-                                           placeholder="Entre 70 et 400"
-                                           :class="{'border-red-500': formErrors.diabetes.glucose}"
-                                           @input="validateField('diabetes', 'glucose', $event.target.value, 70, 400)">
-                                    <p v-if="formErrors.diabetes.glucose" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.diabetes.glucose ]]
-                                    </p>
-                                </div>
-                                
-                                <div class="form-group diabetes">
-                                    <label for="age_diabetes" class="form-label">
-                                        <i class="fas fa-calendar-alt form-icon text-blue-500"></i>
-                                        <span>Âge</span>
-                                    </label>
-                                    <input v-model.number="formData.diabetes.age"
-                                           type="number"
-                                           id="age_diabetes"
-                                           class="form-input form-input-diabetes"
-                                           required
-                                           min="18"
-                                           max="120"
-                                           placeholder="Entre 18 et 120 ans"
-                                           :class="{'border-red-500': formErrors.diabetes.age}"
-                                           @input="validateField('diabetes', 'age', $event.target.value, 18, 120)">
-                                    <p v-if="formErrors.diabetes.age" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.diabetes.age ]]
-                                    </p>
-                                </div>
-
-                                <div class="form-group diabetes">
-                                    <label for="bmi" class="form-label">
-                                        <i class="fas fa-weight form-icon text-blue-500"></i>
-                                        <span>IMC</span>
-                                    </label>
-                                    <input v-model.number="formData.diabetes.bmi"
-                                           type="number"
-                                           id="bmi"
-                                           class="form-input form-input-diabetes"
-                                           required
-                                           min="15"
-                                           max="50"
-                                           step="0.1"
-                                           placeholder="Entre 15 et 50"
-                                           :class="{'border-red-500': formErrors.diabetes.bmi}"
-                                           @input="validateField('diabetes', 'bmi', $event.target.value, 15, 50)">
-                                    <p v-if="formErrors.diabetes.bmi" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.diabetes.bmi ]]
-                                    </p>
-                                </div>
-
-                                <button type="submit"
-                                        :disabled="isLoading || hasErrors('diabetes')"
-                                        class="prediction-button prediction-button-diabetes">
-                                    <template v-if="!isLoading">
-                                        <i class="fas fa-calculator"></i>
-                                        <span>Analyser</span>
-                                    </template>
-                                    <template v-else>
-                                        <span class="spinner"></span>
-                                        <span>Analyse en cours...</span>
-                                    </template>
-                                </button>
-                            </form>
-                        </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                                    Âge
+                                </label>
+                                <input v-model="formData.diabetes.age"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="18"
+                                       max="120">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="bmi">
+                                    IMC
+                                </label>
+                                <input v-model="formData.diabetes.bmi"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="15"
+                                       max="50"
+                                       step="0.1">
+                            </div>
+                            <button type="submit"
+                                    :disabled="isLoading"
+                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <span v-if="!isLoading">Analyser</span>
+                                <span v-else>
+                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                </span>
+                            </button>
+                        </form>
                     </div>
 
                     <!-- Carte Hypertension -->
-                    <div class="prediction-card group">
-                        <div class="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-red-500 to-red-600 p-6">
-                            <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-400 rounded-full opacity-20 transform rotate-12"></div>
-                            <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-red-300 rounded-full opacity-20"></div>
-                            <div class="flex items-center relative z-10">
-                                <div class="w-16 h-16 flex items-center justify-center rounded-full bg-white bg-opacity-20 backdrop-blur-sm mr-4">
-                                    <i class="fas fa-heart-pulse text-white text-2xl"></i>
-                                </div>
-                                <h3 class="text-2xl font-bold text-white">Hypertension</h3>
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-heart-pulse text-red-600 text-2xl mr-3"></i>
+                            <h3 class="text-xl font-semibold text-gray-800">Hypertension</h3>
+                        </div>
+                        <form @submit.prevent="predict('hypertension', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="systolic">
+                                    Pression Systolique (mmHg)
+                                </label>
+                                <input v-model="formData.hypertension.systolic"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="90"
+                                       max="200">
                             </div>
-                        </div>
-                        <div class="p-8 space-y-6 bg-white rounded-b-xl">
-                            <form @submit.prevent="predict('hypertension')" class="space-y-6" novalidate>
-                                <div class="form-group hypertension">
-                                    <label for="systolic" class="form-label">
-                                        <i class="fas fa-arrow-up form-icon text-red-500"></i>
-                                        <span>Pression Systolique (mmHg)</span>
-                                    </label>
-                                    <input v-model.number="formData.hypertension.systolic"
-                                           type="number"
-                                           id="systolic"
-                                           class="form-input form-input-hypertension"
-                                           required
-                                           min="90"
-                                           max="200"
-                                           placeholder="Entre 90 et 200"
-                                           :class="{'border-red-500': formErrors.hypertension.systolic}"
-                                           @input="validateField('hypertension', 'systolic', $event.target.value, 90, 200)">
-                                    <p v-if="formErrors.hypertension.systolic" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.hypertension.systolic ]]
-                                    </p>
-                                </div>
-
-                                <div class="form-group hypertension">
-                                    <label for="diastolic" class="form-label">
-                                        <i class="fas fa-arrow-down form-icon text-red-500"></i>
-                                        <span>Pression Diastolique (mmHg)</span>
-                                    </label>
-                                    <input v-model.number="formData.hypertension.diastolic"
-                                           type="number"
-                                           id="diastolic"
-                                           class="form-input form-input-hypertension"
-                                           required
-                                           min="60"
-                                           max="120"
-                                           placeholder="Entre 60 et 120"
-                                           :class="{'border-red-500': formErrors.hypertension.diastolic}"
-                                           @input="validateField('hypertension', 'diastolic', $event.target.value, 60, 120)">
-                                    <p v-if="formErrors.hypertension.diastolic" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.hypertension.diastolic ]]
-                                    </p>
-                                </div>
-
-                                <div class="form-group hypertension">
-                                    <label for="age_hypertension" class="form-label">
-                                        <i class="fas fa-calendar-alt form-icon text-red-500"></i>
-                                        <span>Âge</span>
-                                    </label>
-                                    <input v-model.number="formData.hypertension.age"
-                                           type="number"
-                                           id="age_hypertension"
-                                           class="form-input form-input-hypertension"
-                                           required
-                                           min="18"
-                                           max="120"
-                                           placeholder="Entre 18 et 120 ans"
-                                           :class="{'border-red-500': formErrors.hypertension.age}"
-                                           @input="validateField('hypertension', 'age', $event.target.value, 18, 120)">
-                                    <p v-if="formErrors.hypertension.age" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.hypertension.age ]]
-                                    </p>
-                                </div>
-
-                                <button type="submit"
-                                        :disabled="isLoading || hasErrors('hypertension')"
-                                        class="prediction-button prediction-button-hypertension">
-                                    <template v-if="!isLoading">
-                                        <i class="fas fa-calculator"></i>
-                                        <span>Analyser</span>
-                                    </template>
-                                    <template v-else>
-                                        <span class="spinner"></span>
-                                        <span>Analyse en cours...</span>
-                                    </template>
-                                </button>
-                            </form>
-                        </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="diastolic">
+                                    Pression Diastolique (mmHg)
+                                </label>
+                                <input v-model="formData.hypertension.diastolic"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="60"
+                                       max="120">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                                    Âge
+                                </label>
+                                <input v-model="formData.hypertension.age"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="18"
+                                       max="120">
+                            </div>
+                            <button type="submit"
+                                    :disabled="isLoading"
+                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <span v-if="!isLoading">Analyser</span>
+                                <span v-else>
+                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                </span>
+                            </button>
+                        </form>
                     </div>
 
                     <!-- Carte Cardiovasculaire -->
-                    <div class="prediction-card group">
-                        <div class="relative overflow-hidden rounded-t-xl bg-gradient-to-br from-purple-500 to-purple-600 p-6">
-                            <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-400 rounded-full opacity-20 transform rotate-12"></div>
-                            <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-purple-300 rounded-full opacity-20"></div>
-                            <div class="flex items-center relative z-10">
-                                <div class="w-16 h-16 flex items-center justify-center rounded-full bg-white bg-opacity-20 backdrop-blur-sm mr-4">
-                                    <i class="fas fa-heartbeat text-white text-2xl"></i>
-                                </div>
-                                <h3 class="text-2xl font-bold text-white">Cardiovasculaire</h3>
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-heartbeat text-purple-600 text-2xl mr-3"></i>
+                            <h3 class="text-xl font-semibold text-gray-800">Cardiovasculaire</h3>
+                        </div>
+                        <form @submit.prevent="predict('cardiovascular', $event)" v-if="activeTab === 'prediction'" class="max-w-md mx-auto">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="heart_rate">
+                                    Fréquence Cardiaque (bpm)
+                                </label>
+                                <input v-model="formData.cardiovascular.heart_rate"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="40"
+                                       max="120">
                             </div>
-                        </div>
-                        <div class="p-8 space-y-6 bg-white rounded-b-xl">
-                            <form @submit.prevent="predict('cardiovascular')" class="space-y-6" novalidate>
-                                <div class="form-group cardiovascular">
-                                    <label for="heart_rate" class="form-label">
-                                        <i class="fas fa-heartbeat form-icon text-purple-500"></i>
-                                        <span>Fréquence Cardiaque (bpm)</span>
-                                    </label>
-                                    <input v-model.number="formData.cardiovascular.heart_rate"
-                                           type="number"
-                                           id="heart_rate"
-                                           class="form-input form-input-cardio"
-                                           required
-                                           min="40"
-                                           max="120"
-                                           placeholder="Entre 40 et 120"
-                                           :class="{'border-red-500': formErrors.cardiovascular.heart_rate}"
-                                           @input="validateField('cardiovascular', 'heart_rate', $event.target.value, 40, 120)">
-                                    <p v-if="formErrors.cardiovascular.heart_rate" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.cardiovascular.heart_rate ]]
-                                    </p>
-                                </div>
-
-                                <div class="form-group cardiovascular">
-                                    <label for="cholesterol" class="form-label">
-                                        <i class="fas fa-flask form-icon text-purple-500"></i>
-                                        <span>Cholestérol (mg/dL)</span>
-                                    </label>
-                                    <input v-model.number="formData.cardiovascular.cholesterol"
-                                           type="number"
-                                           id="cholesterol"
-                                           class="form-input form-input-cardio"
-                                           required
-                                           min="100"
-                                           max="300"
-                                           placeholder="Entre 100 et 300"
-                                           :class="{'border-red-500': formErrors.cardiovascular.cholesterol}"
-                                           @input="validateField('cardiovascular', 'cholesterol', $event.target.value, 100, 300)">
-                                    <p v-if="formErrors.cardiovascular.cholesterol" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.cardiovascular.cholesterol ]]
-                                    </p>
-                                </div>
-
-                                <div class="form-group cardiovascular">
-                                    <label for="age_cardio" class="form-label">
-                                        <i class="fas fa-calendar-alt form-icon text-purple-500"></i>
-                                        <span>Âge</span>
-                                    </label>
-                                    <input v-model.number="formData.cardiovascular.age"
-                                           type="number"
-                                           id="age_cardio"
-                                           class="form-input form-input-cardio"
-                                           required
-                                           min="18"
-                                           max="120"
-                                           placeholder="Entre 18 et 120 ans"
-                                           :class="{'border-red-500': formErrors.cardiovascular.age}"
-                                           @input="validateField('cardiovascular', 'age', $event.target.value, 18, 120)">
-                                    <p v-if="formErrors.cardiovascular.age" class="mt-2 text-sm text-red-600">
-                                        [[ formErrors.cardiovascular.age ]]
-                                    </p>
-                                </div>
-
-                                <button type="submit"
-                                        :disabled="isLoading || hasErrors('cardiovascular')"
-                                        class="prediction-button prediction-button-cardio">
-                                    <template v-if="!isLoading">
-                                        <i class="fas fa-calculator"></i>
-                                        <span>Analyser</span>
-                                    </template>
-                                    <template v-else>
-                                        <span class="spinner"></span>
-                                        <span>Analyse en cours...</span>
-                                    </template>
-                                </button>
-                            </form>
-                        </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="cholesterol">
+                                    Cholestérol (mg/dL)
+                                </label>
+                                <input v-model="formData.cardiovascular.cholesterol"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="100"
+                                       max="300">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                                    Âge
+                                </label>
+                                <input v-model="formData.cardiovascular.age"
+                                       type="number"
+                                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                       required
+                                       min="18"
+                                       max="120">
+                            </div>
+                            <button type="submit"
+                                    :disabled="isLoading"
+                                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                <span v-if="!isLoading">Analyser</span>
+                                <span v-else>
+                                    <i class="fas fa-spinner fa-spin"></i> Analyse en cours...
+                                </span>
+                            </button>
+                        </form>
                     </div>
                 </div>
 
                 <!-- Résultats -->
-                <div v-if="prediction" class="mt-12 sm:mt-16" v-cloak>
-                    <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 max-w-4xl mx-auto overflow-hidden">
-                        <h3 class="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-800">Résultats de l'Analyse</h3>
-                        
-                        <!-- Niveau de Risque -->
-                        <div class="mb-8 sm:mb-12">
-                            <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
-                                <h4 class="text-xl font-medium text-gray-700 mb-4 sm:mb-0">Niveau de Risque :</h4>
-                                <div :class="['px-6 py-3 rounded-full text-white font-medium text-lg transform transition-all duration-300 hover:scale-105', 
-                                    prediction.risk_level === 'Élevé' ? 'bg-red-500' : 
-                                    prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500']">
-                                    [[ prediction.risk_level ]]
-                                </div>
-                            </div>
-
-                            <!-- Description du Risque -->
-                            <div class="text-gray-600 mb-8 text-lg leading-relaxed">
-                                [[ prediction.risk_description ]]
-                            </div>
-
-                            <!-- Probabilité -->
-                            <div class="mb-8">
-                                <div class="progress-bar">
-                                    <div :class="[
-                                        'progress-bar-fill',
-                                        prediction.risk_level === 'Élevé' ? 'bg-red-500' :
-                                        prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500'
-                                    ]" :style="{ width: prediction.probability + '%' }"></div>
-                                </div>
-                                <div class="text-center text-gray-600 mt-3">
-                                    Probabilité : [[ prediction.probability ]]%
-                                </div>
-                            </div>
-
-                            <!-- Facteurs de Risque -->
-                            <div v-if="prediction.risk_factors && prediction.risk_factors.length" class="mb-8">
-                                <h4 class="text-xl font-semibold mb-6 text-gray-800">Facteurs de Risque Identifiés</h4>
-                                <div class="grid gap-4">
-                                    <div v-for="factor in prediction.risk_factors" :key="factor.name" 
-                                         class="card-hover"
-                                         :class="[
-                                             'p-6 rounded-xl',
-                                             factor.severity === 'high' ? 'bg-red-50' :
-                                             factor.severity === 'medium' ? 'bg-yellow-50' : 'bg-green-50'
-                                         ]">
-                                        <h5 class="font-semibold text-lg mb-3"
-                                            :class="[
-                                                factor.severity === 'high' ? 'text-red-700' :
-                                                factor.severity === 'medium' ? 'text-yellow-700' : 'text-green-700'
-                                            ]">
-                                            [[ factor.name ]]
-                                        </h5>
-                                        <p class="text-gray-700 leading-relaxed">[[ factor.description ]]</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Boutons d'action -->
-                            <div class="mt-8 space-y-4">
-                                <button type="button"
-                                        @click="resetAll"
-                                        class="block w-full btn-primary">
-                                    Nouvelle analyse
-                                </button>
-                                <button type="button"
-                                        v-if="prediction"
-                                        @click="downloadReport"
-                                        class="block w-full btn-secondary">
-                                    <span class="flex items-center justify-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                        Télécharger le PDF
-                                    </span>
-                                </button>
+                <div v-if="prediction" class="mt-8 sm:mt-12 bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-2xl mx-auto" v-cloak>
+                    <h3 class="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-800">Résultats de l'Analyse</h3>
+                    
+                    <!-- Niveau de Risque -->
+                    <div class="mb-8 sm:mb-12">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
+                            <h4 class="text-xl font-medium text-gray-700 mb-4 sm:mb-0">Niveau de Risque :</h4>
+                            <div :class="['px-6 py-3 rounded-full text-white font-medium text-lg transform transition-all duration-300 hover:scale-105', 
+                                prediction.risk_level === 'Élevé' ? 'bg-red-500' : 
+                                prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500']">
+                                [[ prediction.risk_level ]]
                             </div>
                         </div>
 
-                        <!-- Recommandations -->
-                        <div v-if="prediction && prediction.recommendations" class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 sm:p-8">
-                            <h4 class="text-xl font-semibold mb-6 text-blue-800">Plan d'Action Recommandé</h4>
-                            <div class="space-y-8">
-                                <div v-for="(rec, index) in prediction.recommendations" :key="index" class="card-hover bg-white rounded-lg p-6">
-                                    <h5 class="font-medium text-blue-700 text-lg mb-4">[[ rec.title ]]</h5>
-                                    <ul class="space-y-3">
-                                        <li v-for="(item, itemIndex) in rec.items" :key="itemIndex" 
-                                            class="flex items-start">
-                                            <span class="text-blue-500 mr-3">
-                                                <i class="fas fa-check-circle"></i>
-                                            </span>
-                                            <span class="text-gray-700">[[ item ]]</span>
-                                        </li>
-                                    </ul>
+                        <!-- Description du Risque -->
+                        <div class="text-gray-600 mb-8 text-lg leading-relaxed">
+                            [[ prediction.risk_description ]]
+                        </div>
+
+                        <!-- Probabilité -->
+                        <div class="mb-8">
+                            <div class="progress-bar">
+                                <div :class="[
+                                    'progress-bar-fill',
+                                    prediction.risk_level === 'Élevé' ? 'bg-red-500' :
+                                    prediction.risk_level === 'Modéré' ? 'bg-yellow-500' : 'bg-green-500'
+                                ]" :style="{ width: prediction.probability + '%' }"></div>
+                            </div>
+                            <div class="text-center text-gray-600 mt-3">
+                                Probabilité : [[ prediction.probability ]]%
+                            </div>
+                        </div>
+
+                        <!-- Facteurs de Risque -->
+                        <div v-if="prediction.risk_factors && prediction.risk_factors.length" class="mb-8">
+                            <h4 class="text-xl font-semibold mb-6 text-gray-800">Facteurs de Risque Identifiés</h4>
+                            <div class="grid gap-4">
+                                <div v-for="factor in prediction.risk_factors" :key="factor.name" 
+                                     class="card-hover"
+                                     :class="[
+                                         'p-6 rounded-xl',
+                                         factor.severity === 'high' ? 'bg-red-50' :
+                                         factor.severity === 'medium' ? 'bg-yellow-50' : 'bg-green-50'
+                                     ]">
+                                    <h5 class="font-semibold text-lg mb-3"
+                                        :class="[
+                                            factor.severity === 'high' ? 'text-red-700' :
+                                            factor.severity === 'medium' ? 'text-yellow-700' : 'text-green-700'
+                                        ]">
+                                        [[ factor.name ]]
+                                    </h5>
+                                    <p class="text-gray-700 leading-relaxed">[[ factor.description ]]</p>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="mt-8 space-y-4">
+                            <button type="button"
+                                    @click="resetAll"
+                                    class="block w-full btn-primary">
+                                Nouvelle analyse
+                            </button>
+                            <button type="button"
+                                    v-if="prediction"
+                                    @click="downloadReport"
+                                    class="block w-full btn-secondary">
+                                <span class="flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Télécharger le PDF
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recommandations -->
+                    <div v-if="prediction && prediction.recommendations" class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 sm:p-8">
+                        <h4 class="text-xl font-semibold mb-6 text-blue-800">Plan d'Action Recommandé</h4>
+                        <div class="space-y-8">
+                            <div v-for="(rec, index) in prediction.recommendations" :key="index" class="card-hover bg-white rounded-lg p-6">
+                                <h5 class="font-medium text-blue-700 text-lg mb-4">[[ rec.title ]]</h5>
+                                <ul class="space-y-3">
+                                    <li v-for="(item, itemIndex) in rec.items" :key="itemIndex" 
+                                        class="flex items-start">
+                                        <span class="text-blue-500 mr-3">
+                                            <i class="fas fa-check-circle"></i>
+                                        </span>
+                                        <span class="text-gray-700">[[ item ]]</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -1009,7 +867,7 @@
                             this.showNotification('Erreur lors du chargement des statistiques', 'error')
                         }
                     },
-                    async predict(diseaseType) {
+                    async predict(diseaseType, event) {
                         if (!this.isAuthenticated) {
                             this.showNotification('Veuillez vous connecter pour faire une prédiction', 'error');
                             this.showLoginModal = true;
