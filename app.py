@@ -21,11 +21,13 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'votre_cle_secrete_tres_longue_et_aleatoire')
-app.config['SESSION_TYPE'] = 'mongodb'
-app.config['SESSION_MONGODB'] = client
-app.config['SESSION_MONGODB_DB'] = 'medical_predictions'
-app.config['SESSION_MONGODB_COLLECT'] = 'sessions'
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'
+
+# Assurez-vous que le répertoire de session existe
+os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 
 Session(app)
 
