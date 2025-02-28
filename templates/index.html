@@ -44,8 +44,12 @@
         }
 
         /* Style personnalisé pour les formulaires */
-        .custom-input {
-            @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200;
+        .form-input {
+            @apply w-full px-8 py-6 text-xl rounded-xl border-4 focus:ring-4 transition-all duration-300;
+            @apply placeholder-gray-500 text-gray-900 font-medium;
+            @apply shadow-lg hover:shadow-xl;
+            @apply mb-4;
+            min-height: 4.5rem;
         }
 
         /* Style pour le menu mobile */
@@ -127,109 +131,82 @@
         }
 
         /* Style pour les champs de formulaire */
-        .form-input {
-            @apply w-full px-6 py-4 text-lg rounded-xl border-2 focus:ring-2 transition-all duration-300 bg-white;
-            @apply placeholder-gray-400 text-gray-700;
-            @apply shadow-md hover:shadow-lg;
-            @apply mb-2;
-            border-width: 2px;
-            min-height: 3.5rem;
-        }
-        
         .form-input-diabetes {
-            @apply border-blue-300 focus:border-blue-500 focus:ring-blue-200 hover:border-blue-400;
-            background-color: rgba(239, 246, 255, 0.5);
+            @apply border-blue-400 focus:border-blue-600 focus:ring-blue-300 hover:border-blue-500;
+            background-color: rgba(239, 246, 255, 0.8);
         }
         
         .form-input-hypertension {
-            @apply border-red-300 focus:border-red-500 focus:ring-red-200 hover:border-red-400;
-            background-color: rgba(254, 242, 242, 0.5);
+            @apply border-red-400 focus:border-red-600 focus:ring-red-300 hover:border-red-500;
+            background-color: rgba(254, 242, 242, 0.8);
         }
         
         .form-input-cardio {
-            @apply border-purple-300 focus:border-purple-500 focus:ring-purple-200 hover:border-purple-400;
-            background-color: rgba(245, 243, 255, 0.5);
-        }
-        
-        .prediction-button {
-            @apply w-full py-5 px-8 rounded-xl font-semibold text-lg text-white transform transition-all duration-300;
-            @apply shadow-lg hover:shadow-xl flex items-center justify-center space-x-4;
-            @apply disabled:opacity-50 disabled:cursor-not-allowed;
-        }
-        
-        .prediction-button-diabetes {
-            @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700;
-        }
-        
-        .prediction-button-hypertension {
-            @apply bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700;
-        }
-        
-        .prediction-button-cardio {
-            @apply bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700;
+            @apply border-purple-400 focus:border-purple-600 focus:ring-purple-300 hover:border-purple-500;
+            background-color: rgba(245, 243, 255, 0.8);
         }
         
         .form-group {
-            @apply transform transition-all duration-200 p-6 rounded-xl bg-white shadow-md hover:shadow-lg;
-            @apply mb-6;
-            border: 1px solid #e5e7eb;
+            @apply transform transition-all duration-200 p-8 rounded-xl bg-white shadow-xl hover:shadow-2xl;
+            @apply mb-8;
+            border: 2px solid #e5e7eb;
         }
         
         .form-label {
-            @apply block text-gray-700 font-semibold mb-3 flex items-center space-x-4 text-xl;
+            @apply block text-gray-800 font-bold mb-4 flex items-center space-x-4 text-2xl;
             @apply transition-colors duration-200;
         }
         
         .form-icon {
-            @apply w-8 h-8 opacity-90;
+            @apply w-10 h-10 opacity-100;
         }
 
         /* Messages d'erreur */
         .error-message {
-            @apply mt-2 text-sm text-red-600 font-medium;
+            @apply mt-3 text-base text-red-600 font-semibold;
         }
 
         /* Responsive Design amélioré */
         @media (max-width: 640px) {
             .form-input {
-                @apply px-4 py-3 text-base;
-                min-height: 3rem;
-            }
-            
-            .form-group {
-                @apply p-4;
-            }
-            
-            .form-label {
-                @apply text-lg mb-2;
-            }
-            
-            .form-icon {
-                @apply w-6 h-6;
-            }
-        }
-
-        @media (min-width: 641px) and (max-width: 768px) {
-            .form-input {
-                @apply px-5 py-4 text-lg;
+                @apply px-6 py-4 text-lg;
+                min-height: 4rem;
             }
             
             .form-group {
                 @apply p-6;
             }
+            
+            .form-label {
+                @apply text-xl mb-3;
+            }
+            
+            .form-icon {
+                @apply w-8 h-8;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 768px) {
+            .form-input {
+                @apply px-7 py-5 text-xl;
+            }
+            
+            .form-group {
+                @apply p-7;
+            }
         }
 
         @media (min-width: 769px) {
             .prediction-grid {
-                @apply gap-8;
+                @apply gap-10;
             }
             
             .form-group {
-                @apply p-8;
+                @apply p-10;
             }
             
             .form-input {
-                @apply text-lg;
+                @apply text-xl;
             }
         }
     </style>
