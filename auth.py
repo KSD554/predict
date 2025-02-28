@@ -123,14 +123,24 @@ def save_prediction(user_id, prediction_data):
     except Exception as e:
         return False, f"Erreur lors de la sauvegarde: {str(e)}"
 
-def create_blog_post(title, content, author_id, author_name, image_url=None, tags=None):
+def create_blog_post(title, content, author_id, author_name, image=None, tags=None):
     try:
+        # Vérifier si l'image est fournie
+        if not image:
+            logger.error("Image manquante pour la création de l'article")
+            return False, "L'image de couverture est obligatoire"
+
+        # Vérifier si l'image est en base64
+        if not image.startswith('data:image/'):
+            logger.error("Format d'image invalide")
+            return False, "Format d'image invalide"
+
         post = {
             'title': title,
             'content': content,
             'author_id': author_id,
             'author_name': author_name,
-            'image_url': image_url,
+            'image': image,  # Stockage de l'image en base64
             'tags': tags or [],
             'created_at': datetime.now(),
             'updated_at': datetime.now(),
@@ -138,8 +148,10 @@ def create_blog_post(title, content, author_id, author_name, image_url=None, tag
             'comments': []
         }
         result = blog_posts.insert_one(post)
+        logger.info(f"Article créé avec succès: {result.inserted_id}")
         return True, str(result.inserted_id)
     except Exception as e:
+        logger.error(f"Erreur lors de la création de l'article: {str(e)}")
         return False, str(e)
 
 def get_blog_posts(page=1, per_page=10):
@@ -181,15 +193,21 @@ def get_blog_post(post_id):
     except Exception as e:
         return None
 
-def update_blog_post(post_id, title, content, image_url=None, tags=None):
+def update_blog_post(post_id, title, content, image=None, tags=None):
     try:
         update_data = {
             'title': title,
             'content': content,
             'updated_at': datetime.now()
         }
-        if image_url is not None:
-            update_data['image_url'] = image_url
+        
+        # Mettre à jour l'image si fournie
+        if image is not None:
+            if not image.startswith('data:image/'):
+                logger.error("Format d'image invalide")
+                return False
+            update_data['image'] = image
+            
         if tags is not None:
             update_data['tags'] = tags
             
@@ -199,6 +217,7 @@ def update_blog_post(post_id, title, content, image_url=None, tags=None):
         )
         return result.modified_count > 0
     except Exception as e:
+        logger.error(f"Erreur lors de la mise à jour de l'article: {str(e)}")
         return False
 
 def delete_blog_post(post_id, author_id):

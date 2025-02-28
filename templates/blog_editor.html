@@ -6,11 +6,24 @@
     <title>{% if post %}Modifier l'article{% else %}Nouvel article{% endif %} - MediPredict</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Ajout de TinyMCE pour un éditeur de texte riche -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#content',
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            height: 500,
+            menubar: false,
+            statusbar: false,
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5; }',
+        });
+    </script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
     <div id="app" class="min-h-screen">
         <!-- Header -->
-        <header class="bg-white shadow-md">
+        <header class="bg-white shadow-sm">
             <nav class="container mx-auto px-4 sm:px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center">
@@ -33,70 +46,91 @@
             </nav>
         </header>
 
-        <main>
-            <div class="container mx-auto px-4 py-8">
-                <div class="max-w-4xl mx-auto">
-                    <div class="mb-8">
-                        <a href="{{ url_for('blog') }}" class="text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-arrow-left"></i> Retour au blog
-                        </a>
-                    </div>
+        <main class="py-10">
+            <div class="container mx-auto px-4 max-w-5xl">
+                <div class="mb-8 flex items-center">
+                    <a href="{{ url_for('blog') }}" class="flex items-center text-blue-600 hover:text-blue-800 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span>Retour au blog</span>
+                    </a>
+                </div>
 
-                    <div class="bg-white rounded-lg shadow-lg p-8">
-                        <h1 class="text-3xl font-bold text-gray-900 mb-8">
-                            {% if post %}Modifier l'article{% else %}Nouvel article{% endif %}
-                        </h1>
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-10">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
+                        {% if post %}Modifier l'article{% else %}Créer un nouvel article{% endif %}
+                    </h1>
 
-                        <form id="postForm" class="space-y-6">
-                            <div>
-                                <label for="title" class="block text-sm font-medium text-gray-700">Titre</label>
-                                <input type="text"
-                                       id="title"
-                                       name="title"
-                                       value="{{ post.title if post else '' }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                       required>
+                    <form id="postForm" class="space-y-8">
+                        <!-- Titre -->
+                        <div class="space-y-2">
+                            <label for="title" class="block text-sm font-medium text-gray-700">Titre de l'article</label>
+                            <input type="text"
+                                   id="title"
+                                   name="title"
+                                   value="{{ post.title if post else '' }}"
+                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                   placeholder="Entrez un titre captivant"
+                                   required>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div class="space-y-2">
+                            <label for="image" class="block text-sm font-medium text-gray-700">Image de couverture</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-500 transition-colors">
+                                <div class="space-y-2 text-center">
+                                    <div class="image-preview-container mb-4 hidden">
+                                        <img id="imagePreview" src="#" alt="Aperçu" class="mx-auto h-48 w-auto rounded-lg shadow-sm">
+                                    </div>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="image-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                            <span>Télécharger une image</span>
+                                            <input id="image-upload" name="image" type="file" class="sr-only" accept="image/*" required>
+                                        </label>
+                                        <p class="pl-1">ou glissez et déposez</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF jusqu'à 5MB</p>
+                                </div>
                             </div>
+                        </div>
 
-                            <div>
-                                <label for="content" class="block text-sm font-medium text-gray-700">Contenu</label>
-                                <textarea id="content"
-                                          name="content"
-                                          rows="12"
-                                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                          required>{{ post.content if post else '' }}</textarea>
-                            </div>
+                        <!-- Contenu -->
+                        <div class="space-y-2">
+                            <label for="content" class="block text-sm font-medium text-gray-700">Contenu de l'article</label>
+                            <textarea id="content"
+                                      name="content"
+                                      class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                      required>{{ post.content if post else '' }}</textarea>
+                        </div>
 
-                            <div>
-                                <label for="image_url" class="block text-sm font-medium text-gray-700">URL de l'image (optionnel)</label>
-                                <input type="url"
-                                       id="image_url"
-                                       name="image_url"
-                                       value="{{ post.image_url if post else '' }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-
-                            <div>
-                                <label for="tags" class="block text-sm font-medium text-gray-700">Tags (séparés par des virgules)</label>
+                        <!-- Tags -->
+                        <div class="space-y-2">
+                            <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                                    <i class="fas fa-tags"></i>
+                                </span>
                                 <input type="text"
                                        id="tags"
                                        name="tags"
                                        value="{{ post.tags|join(', ') if post and post.tags else '' }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                       class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                       placeholder="Entrez les tags séparés par des virgules">
                             </div>
+                            <p class="text-sm text-gray-500">Ex: santé, bien-être, médecine</p>
+                        </div>
 
-                            <div class="flex justify-end gap-4">
-                                <a href="{{ url_for('blog') }}"
-                                   class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                    Annuler
-                                </a>
-                                <button type="submit"
-                                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                    {% if post %}Mettre à jour{% else %}Publier{% endif %}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <!-- Boutons -->
+                        <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6">
+                            <a href="{{ url_for('blog') }}"
+                               class="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 text-center transition duration-200">
+                                Annuler
+                            </a>
+                            <button type="submit"
+                                    class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+                                {% if post %}Mettre à jour{% else %}Publier{% endif %}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </main>
@@ -109,18 +143,97 @@
     </div>
 
     <script>
-    document.getElementById('postForm').addEventListener('submit', function(e) {
+    // Fonction pour prévisualiser l'image
+    function previewImage(file) {
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.src = e.target.result;
+                document.querySelector('.image-preview-container').classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Gestion du drag & drop
+    const dropZone = document.querySelector('.border-dashed');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
         e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('border-blue-500', 'bg-blue-50');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        
+        if (file && file.type.startsWith('image/')) {
+            document.getElementById('image-upload').files = dt.files;
+            previewImage(file);
+        }
+    }
+
+    // Gestion du changement de fichier via le bouton
+    document.getElementById('image-upload').addEventListener('change', function(e) {
+        if (this.files[0]) {
+            previewImage(this.files[0]);
+        }
+    });
+
+    document.getElementById('postForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const imageFile = document.getElementById('image-upload').files[0];
+        if (!imageFile) {
+            alert('Veuillez sélectionner une image de couverture');
+            return;
+        }
+
+        // Convertir l'image en base64
+        const base64Image = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(imageFile);
+        });
         
         const formData = {
             title: document.getElementById('title').value,
-            content: document.getElementById('content').value,
-            image_url: document.getElementById('image_url').value || null,
+            content: tinymce.get('content').getContent(),
+            image: base64Image,
             tags: document.getElementById('tags').value
                 .split(',')
                 .map(tag => tag.trim())
                 .filter(tag => tag)
         };
+
+        // Afficher un indicateur de chargement
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement en cours...';
         
         {% if post %}
         // Mode édition
@@ -137,7 +250,14 @@
                 window.location.href = '{{ url_for("view_post", post_id=post._id) }}';
             } else {
                 alert('Erreur lors de la mise à jour de l\'article');
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
             }
+        })
+        .catch(error => {
+            alert('Erreur lors de la mise à jour de l\'article');
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
         });
         {% else %}
         // Mode création
@@ -154,7 +274,14 @@
                 window.location.href = `/blog/post/${data.post_id}`;
             } else {
                 alert('Erreur lors de la création de l\'article');
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
             }
+        })
+        .catch(error => {
+            alert('Erreur lors de la création de l\'article');
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
         });
         {% endif %}
     });
