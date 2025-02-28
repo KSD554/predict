@@ -11,26 +11,46 @@
 <body class="bg-gray-100">
     <div id="app" class="min-h-screen">
         <!-- Header -->
-        <header class="bg-white shadow-sm">
+        <header class="bg-white shadow-md">
             <nav class="container mx-auto px-4 sm:px-6 py-4">
                 <div class="flex justify-between items-center">
-                    <!-- Logo -->
-                    <div class="flex items-center">
+                    <!-- Logo avec description -->
+                    <div class="flex items-center space-x-4">
                         <a href="{{ url_for('index') }}" class="flex items-center">
-                            <i class="fas fa-heartbeat text-red-600 text-2xl mr-2"></i>
-                            <span class="text-xl font-bold text-gray-800">MediPredict</span>
+                            <i class="fas fa-heartbeat text-red-600 text-3xl mr-2"></i>
+                            <div>
+                                <span class="text-xl font-bold text-gray-800 block">MediPredict</span>
+                                <span class="text-sm text-gray-500 hidden md:block">Votre assistant santé intelligent</span>
+                            </div>
                         </a>
                     </div>
 
-                    <!-- Menu Desktop -->
+                    <!-- Menu Desktop avec badges -->
                     <div class="hidden md:flex items-center space-x-8">
-                        <a href="{{ url_for('index') }}" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
-                        <a href="{{ url_for('blog') }}" class="text-gray-600 hover:text-blue-600 transition">Blog</a>
+                        <a href="{{ url_for('index') }}" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition">
+                            <i class="fas fa-home"></i>
+                            <span>Accueil</span>
+                        </a>
+                        <a href="{{ url_for('blog') }}" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition">
+                            <i class="fas fa-blog"></i>
+                            <span>Blog</span>
+                        </a>
                         {% if is_authenticated %}
-                        <span class="text-gray-600">{{ session.user_name }}</span>
-                        <a href="{{ url_for('logout') }}" class="text-red-600 hover:text-red-800">Déconnexion</a>
+                        <div class="flex items-center space-x-4 bg-gray-100 px-4 py-2 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-circle text-gray-600 text-xl mr-2"></i>
+                                <span class="text-gray-800 font-medium">{{ session.user_name }}</span>
+                            </div>
+                            <a href="{{ url_for('logout') }}" class="flex items-center space-x-2 text-red-600 hover:text-red-800 transition">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Déconnexion</span>
+                            </a>
+                        </div>
                         {% else %}
-                        <a href="{{ url_for('login') }}" class="text-blue-600 hover:text-blue-800">Connexion</a>
+                        <a href="{{ url_for('login') }}" class="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Connexion</span>
+                        </a>
                         {% endif %}
                     </div>
 
@@ -137,20 +157,91 @@
             </div>
         </main>
 
-        <footer class="bg-gray-800 text-white py-8 mt-12">
+        <footer class="bg-gray-800 text-white py-12 mt-12">
             <div class="container mx-auto px-4">
-                <div class="flex flex-col md:flex-row justify-between items-center">
-                    <div class="text-center md:text-left mb-4 md:mb-0">
-                        <p>&copy; 2024 MediPredict. Tous droits réservés.</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <!-- À propos -->
+                    <div class="md:col-span-2">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-heartbeat text-red-500 text-3xl mr-2"></i>
+                            <h3 class="text-xl font-bold">MediPredict</h3>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            Votre plateforme de prédiction médicale intelligente, utilisant l'IA pour vous aider à prendre soin de votre santé.
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-300 hover:text-white transition">
+                                <i class="fab fa-twitter text-xl"></i>
+                            </a>
+                            <a href="#" class="text-gray-300 hover:text-white transition">
+                                <i class="fab fa-facebook text-xl"></i>
+                            </a>
+                            <a href="#" class="text-gray-300 hover:text-white transition">
+                                <i class="fab fa-linkedin text-xl"></i>
+                            </a>
+                        </div>
                     </div>
-                    <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8">
-                        <a href="{{ url_for('index') }}" class="text-gray-300 hover:text-white transition">Accueil</a>
-                        <a href="{{ url_for('blog') }}" class="text-gray-300 hover:text-white transition">Blog</a>
-                        {% if is_authenticated %}
-                        <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 transition">Déconnexion</a>
-                        {% else %}
-                        <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300 transition">Connexion</a>
-                        {% endif %}
+
+                    <!-- Navigation Rapide -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Navigation Rapide</h3>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="{{ url_for('index') }}" class="text-gray-300 hover:text-white transition flex items-center">
+                                    <i class="fas fa-chevron-right text-sm mr-2"></i>
+                                    Accueil
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('blog') }}" class="text-gray-300 hover:text-white transition flex items-center">
+                                    <i class="fas fa-chevron-right text-sm mr-2"></i>
+                                    Blog
+                                </a>
+                            </li>
+                            {% if is_authenticated %}
+                            <li>
+                                <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 transition flex items-center">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>
+                                    Déconnexion
+                                </a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300 transition flex items-center">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>
+                                    Connexion
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <!-- Contact -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Contact</h3>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-envelope mr-2"></i>
+                                contact@medipredict.com
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-phone mr-2"></i>
+                                +33 1 23 45 67 89
+                            </li>
+                            <li class="flex items-center text-gray-300">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                Paris, France
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-300">&copy; 2024 MediPredict. Tous droits réservés.</p>
+                    <div class="flex space-x-4 mt-4 md:mt-0">
+                        <a href="#" class="text-gray-300 hover:text-white transition">Mentions légales</a>
+                        <a href="#" class="text-gray-300 hover:text-white transition">Politique de confidentialité</a>
+                        <a href="#" class="text-gray-300 hover:text-white transition">CGU</a>
                     </div>
                 </div>
             </div>
