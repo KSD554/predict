@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <a href="{{ url_for('blog') }}" class="text-blue-600 hover:text-blue-800">
+                <i class="fas fa-arrow-left"></i> Retour au blog
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">
+                {% if post %}Modifier l'article{% else %}Nouvel article{% endif %}
+            </h1>
+
+            <form id="postForm" class="space-y-6">
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Titre</label>
+                    <input type="text"
+                           id="title"
+                           name="title"
+                           value="{{ post.title if post else '' }}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           required>
+                </div>
+
+                <div>
+                    <label for="content" class="block text-sm font-medium text-gray-700">Contenu</label>
+                    <textarea id="content"
+                              name="content"
+                              rows="12"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              required>{{ post.content if post else '' }}</textarea>
+                </div>
+
+                <div>
+                    <label for="image_url" class="block text-sm font-medium text-gray-700">URL de l'image (optionnel)</label>
+                    <input type="url"
+                           id="image_url"
+                           name="image_url"
+                           value="{{ post.image_url if post else '' }}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label for="tags" class="block text-sm font-medium text-gray-700">Tags (séparés par des virgules)</label>
+                    <input type="text"
+                           id="tags"
+                           name="tags"
+                           value="{{ post.tags|join(', ') if post and post.tags else '' }}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <a href="{{ url_for('blog') }}"
+                       class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Annuler
+                    </a>
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        {% if post %}Mettre à jour{% else %}Publier{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('postForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        title: document.getElementById('title').value,
+        content: document.getElementById('content').value,
+        image_url: document.getElementById('image_url').value || null,
+        tags: document.getElementById('tags').value
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag)
+    };
+    
+    {% if post %}
+    // Mode édition
+    fetch('{{ url_for("edit_post", post_id=post._id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '{{ url_for("view_post", post_id=post._id) }}';
+        } else {
+            alert('Erreur lors de la mise à jour de l\'article');
+        }
+    });
+    {% else %}
+    // Mode création
+    fetch('{{ url_for("new_post") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = `/blog/post/${data.post_id}`;
+        } else {
+            alert('Erreur lors de la création de l\'article');
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %} 

@@ -14,7 +14,11 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from io import BytesIO
 from flask_session import Session
-from auth import init_db, register_user, login_user, logout_user, is_authenticated, save_prediction, client
+from auth import (
+    init_db, register_user, login_user, logout_user, is_authenticated, save_prediction,
+    client, create_blog_post, get_blog_posts, get_blog_post, update_blog_post,
+    delete_blog_post, add_comment, toggle_like
+)
 
 # Charger les variables d'environnement
 load_dotenv()
@@ -657,6 +661,92 @@ def download_report(disease_type):
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Erreur lors de la génération du rapport'}), 500
+
+@app.route('/blog')
+def blog():
+    page = request.args.get('page', 1, type=int)
+    result = get_blog_posts(page=page)
+    if result is None:
+        return render_template('blog.html', posts=[], total=0, pages=1, current_page=1)
+    return render_template('blog.html', **result)
+
+@app.route('/blog/post/<post_id>')
+def view_post(post_id):
+    post = get_blog_post(post_id)
+    if not post:
+        return redirect(url_for('blog'))
+    return render_template('blog_post.html', post=post)
+
+@app.route('/blog/new', methods=['GET', 'POST'])
+def new_post():
+    if not is_authenticated():
+        return redirect(url_for('blog'))
+        
+    if request.method == 'POST':
+        data = request.get_json()
+        success, post_id = create_blog_post(
+            title=data['title'],
+            content=data['content'],
+            author_id=session['user_id'],
+            author_name=session['user_name'],
+            image_url=data.get('image_url'),
+            tags=data.get('tags', [])
+        )
+        return jsonify({'success': success, 'post_id': post_id})
+    
+    return render_template('blog_editor.html')
+
+@app.route('/blog/edit/<post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    if not is_authenticated():
+        return redirect(url_for('blog'))
+        
+    post = get_blog_post(post_id)
+    if not post or post['author_id'] != session['user_id']:
+        return redirect(url_for('blog'))
+        
+    if request.method == 'POST':
+        data = request.get_json()
+        success = update_blog_post(
+            post_id=post_id,
+            title=data['title'],
+            content=data['content'],
+            image_url=data.get('image_url'),
+            tags=data.get('tags', [])
+        )
+        return jsonify({'success': success})
+    
+    return render_template('blog_editor.html', post=post)
+
+@app.route('/blog/delete/<post_id>', methods=['POST'])
+def delete_post(post_id):
+    if not is_authenticated():
+        return jsonify({'success': False, 'message': 'Non autorisé'}), 401
+        
+    success = delete_blog_post(post_id, session['user_id'])
+    return jsonify({'success': success})
+
+@app.route('/blog/comment/<post_id>', methods=['POST'])
+def comment_post(post_id):
+    if not is_authenticated():
+        return jsonify({'success': False, 'message': 'Non autorisé'}), 401
+        
+    data = request.get_json()
+    success = add_comment(
+        post_id=post_id,
+        user_id=session['user_id'],
+        user_name=session['user_name'],
+        content=data['content']
+    )
+    return jsonify({'success': success})
+
+@app.route('/blog/like/<post_id>', methods=['POST'])
+def like_post(post_id):
+    if not is_authenticated():
+        return jsonify({'success': False, 'message': 'Non autorisé'}), 401
+        
+    success = toggle_like(post_id, session['user_id'])
+    return jsonify({'success': success})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
