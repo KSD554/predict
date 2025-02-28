@@ -125,6 +125,51 @@
             @apply animate-spin rounded-full h-6 w-6 border-4;
             border-top-color: transparent;
         }
+
+        /* Style pour les champs de formulaire */
+        .form-input {
+            @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300 bg-white hover:border-blue-400;
+        }
+        
+        .form-input-diabetes {
+            @apply focus:border-blue-500 focus:ring-blue-200 hover:border-blue-400;
+        }
+        
+        .form-input-hypertension {
+            @apply focus:border-red-500 focus:ring-red-200 hover:border-red-400;
+        }
+        
+        .form-input-cardio {
+            @apply focus:border-purple-500 focus:ring-purple-200 hover:border-purple-400;
+        }
+        
+        .prediction-button {
+            @apply w-full py-4 px-6 rounded-xl font-semibold text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2;
+        }
+        
+        .prediction-button-diabetes {
+            @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700;
+        }
+        
+        .prediction-button-hypertension {
+            @apply bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700;
+        }
+        
+        .prediction-button-cardio {
+            @apply bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700;
+        }
+        
+        .form-group {
+            @apply transform hover:scale-105 transition-all duration-200 p-4 rounded-xl bg-white bg-opacity-50 backdrop-blur-sm;
+        }
+        
+        .form-label {
+            @apply block text-gray-700 font-medium mb-3 flex items-center space-x-2 text-lg;
+        }
+        
+        .form-icon {
+            @apply w-6 h-6 opacity-70;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -331,50 +376,55 @@
                         </div>
                         <div class="p-8 space-y-6 bg-white rounded-b-2xl">
                             <form @submit.prevent="predict('diabetes')" class="space-y-6">
-                                <div class="group transform hover:scale-105 transition-all duration-200">
-                                    <label class="block text-gray-700 font-medium mb-3 group-hover:text-blue-600 transition-colors" for="glucose">
-                                        <i class="fas fa-tint mr-2 opacity-70"></i>
-                                        Glycémie (mg/dL)
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-tint form-icon text-blue-500"></i>
+                                        <span>Glycémie (mg/dL)</span>
                                     </label>
                                     <input v-model="formData.diabetes.glucose"
                                            type="number"
-                                           class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300"
+                                           class="form-input form-input-diabetes"
                                            required
                                            min="70"
                                            max="400"
-                                           step="1">
+                                           step="1"
+                                           placeholder="Entrez votre glycémie">
                                 </div>
-                                <div class="group">
-                                    <label class="block text-gray-700 font-medium mb-2 group-hover:text-blue-600 transition-colors" for="age">
-                                        Âge
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar-alt form-icon text-blue-500"></i>
+                                        <span>Âge</span>
                                     </label>
                                     <input v-model="formData.diabetes.age"
                                            type="number"
-                                           class="custom-input focus:ring-blue-500 hover:border-blue-400"
+                                           class="form-input form-input-diabetes"
                                            required
                                            min="18"
-                                           max="120">
+                                           max="120"
+                                           placeholder="Entrez votre âge">
                                 </div>
-                                <div class="group">
-                                    <label class="block text-gray-700 font-medium mb-2 group-hover:text-blue-600 transition-colors" for="bmi">
-                                        IMC
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-weight form-icon text-blue-500"></i>
+                                        <span>IMC</span>
                                     </label>
                                     <input v-model="formData.diabetes.bmi"
                                            type="number"
-                                           class="custom-input focus:ring-blue-500 hover:border-blue-400"
+                                           class="form-input form-input-diabetes"
                                            required
                                            min="15"
                                            max="50"
-                                           step="0.1">
+                                           step="0.1"
+                                           placeholder="Entrez votre IMC">
                                 </div>
                                 <button type="submit"
                                         :disabled="isLoading"
-                                        class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl">
-                                    <span v-if="!isLoading" class="flex items-center justify-center">
+                                        class="prediction-button prediction-button-diabetes">
+                                    <span v-if="!isLoading">
                                         <i class="fas fa-calculator mr-2"></i>
                                         Analyser
                                     </span>
-                                    <span v-else class="flex items-center justify-center">
+                                    <span v-else class="flex items-center">
                                         <span class="spinner mr-2"></span>
                                         Analyse en cours...
                                     </span>
@@ -397,48 +447,53 @@
                         </div>
                         <div class="p-8 space-y-6 bg-white rounded-b-2xl">
                             <form @submit.prevent="predict('hypertension')" class="space-y-6">
-                                <div class="group transform hover:scale-105 transition-all duration-200">
-                                    <label class="block text-gray-700 font-medium mb-3 group-hover:text-red-600 transition-colors">
-                                        <i class="fas fa-arrow-up mr-2 opacity-70"></i>
-                                        Pression Systolique (mmHg)
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-arrow-up form-icon text-red-500"></i>
+                                        <span>Pression Systolique (mmHg)</span>
                                     </label>
                                     <input v-model="formData.hypertension.systolic"
                                            type="number"
-                                           class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-red-500 focus:ring focus:ring-red-200 transition-all duration-300"
+                                           class="form-input form-input-hypertension"
                                            required
                                            min="90"
-                                           max="200">
+                                           max="200"
+                                           placeholder="Entrez votre pression systolique">
                                 </div>
-                                <div class="group">
-                                    <label class="block text-gray-700 font-medium mb-2 group-hover:text-red-600 transition-colors" for="diastolic">
-                                        Pression Diastolique (mmHg)
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-arrow-down form-icon text-red-500"></i>
+                                        <span>Pression Diastolique (mmHg)</span>
                                     </label>
                                     <input v-model="formData.hypertension.diastolic"
                                            type="number"
-                                           class="custom-input focus:ring-red-500 hover:border-red-400"
+                                           class="form-input form-input-hypertension"
                                            required
                                            min="60"
-                                           max="120">
+                                           max="120"
+                                           placeholder="Entrez votre pression diastolique">
                                 </div>
-                                <div class="group">
-                                    <label class="block text-gray-700 font-medium mb-2 group-hover:text-red-600 transition-colors" for="age">
-                                        Âge
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar-alt form-icon text-red-500"></i>
+                                        <span>Âge</span>
                                     </label>
                                     <input v-model="formData.hypertension.age"
                                            type="number"
-                                           class="custom-input focus:ring-red-500 hover:border-red-400"
+                                           class="form-input form-input-hypertension"
                                            required
                                            min="18"
-                                           max="120">
+                                           max="120"
+                                           placeholder="Entrez votre âge">
                                 </div>
                                 <button type="submit"
                                         :disabled="isLoading"
-                                        class="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl">
-                                    <span v-if="!isLoading" class="flex items-center justify-center">
+                                        class="prediction-button prediction-button-hypertension">
+                                    <span v-if="!isLoading">
                                         <i class="fas fa-calculator mr-2"></i>
                                         Analyser
                                     </span>
-                                    <span v-else class="flex items-center justify-center">
+                                    <span v-else class="flex items-center">
                                         <span class="spinner mr-2"></span>
                                         Analyse en cours...
                                     </span>
@@ -461,48 +516,53 @@
                         </div>
                         <div class="p-8 space-y-6 bg-white rounded-b-2xl">
                             <form @submit.prevent="predict('cardiovascular')" class="space-y-6">
-                                <div class="group transform hover:scale-105 transition-all duration-200">
-                                    <label class="block text-gray-700 font-medium mb-3 group-hover:text-purple-600 transition-colors">
-                                        <i class="fas fa-heart-circle-bolt mr-2 opacity-70"></i>
-                                        Fréquence Cardiaque (bpm)
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-heartbeat form-icon text-purple-500"></i>
+                                        <span>Fréquence Cardiaque (bpm)</span>
                                     </label>
                                     <input v-model="formData.cardiovascular.heart_rate"
                                            type="number"
-                                           class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-300"
+                                           class="form-input form-input-cardio"
                                            required
                                            min="40"
-                                           max="120">
+                                           max="120"
+                                           placeholder="Entrez votre fréquence cardiaque">
                                 </div>
-                                <div class="group">
-                                    <label class="block text-gray-700 font-medium mb-2 group-hover:text-purple-600 transition-colors" for="cholesterol">
-                                        Cholestérol (mg/dL)
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-flask form-icon text-purple-500"></i>
+                                        <span>Cholestérol (mg/dL)</span>
                                     </label>
                                     <input v-model="formData.cardiovascular.cholesterol"
                                            type="number"
-                                           class="custom-input focus:ring-purple-500 hover:border-purple-400"
+                                           class="form-input form-input-cardio"
                                            required
                                            min="100"
-                                           max="300">
+                                           max="300"
+                                           placeholder="Entrez votre taux de cholestérol">
                                 </div>
-                                <div class="group">
-                                    <label class="block text-gray-700 font-medium mb-2 group-hover:text-purple-600 transition-colors" for="age">
-                                        Âge
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar-alt form-icon text-purple-500"></i>
+                                        <span>Âge</span>
                                     </label>
                                     <input v-model="formData.cardiovascular.age"
                                            type="number"
-                                           class="custom-input focus:ring-purple-500 hover:border-purple-400"
+                                           class="form-input form-input-cardio"
                                            required
                                            min="18"
-                                           max="120">
+                                           max="120"
+                                           placeholder="Entrez votre âge">
                                 </div>
                                 <button type="submit"
                                         :disabled="isLoading"
-                                        class="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-700 hover:to-purple-800 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl">
-                                    <span v-if="!isLoading" class="flex items-center justify-center">
+                                        class="prediction-button prediction-button-cardio">
+                                    <span v-if="!isLoading">
                                         <i class="fas fa-calculator mr-2"></i>
                                         Analyser
                                     </span>
-                                    <span v-else class="flex items-center justify-center">
+                                    <span v-else class="flex items-center">
                                         <span class="spinner mr-2"></span>
                                         Analyse en cours...
                                     </span>
