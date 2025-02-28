@@ -17,7 +17,8 @@ from flask_session import Session
 from auth import (
     init_db, register_user, login_user, logout_user, is_authenticated, save_prediction,
     client, create_blog_post, get_blog_posts, get_blog_post, update_blog_post,
-    delete_blog_post, add_comment, toggle_like, add_site_comment, delete_site_comment
+    delete_blog_post, add_comment, toggle_like, add_site_comment, delete_site_comment,
+    predictions, get_site_comments
 )
 
 # Charger les variables d'environnement
@@ -102,12 +103,19 @@ models, scalers = initialize_models()
 
 @app.route('/')
 def index():
-    predictions_count = len(list(predictions.find()))
-    comments = get_site_comments()
-    return render_template('index.html', 
-                         predictions_count=predictions_count,
-                         is_authenticated=is_authenticated(),
-                         comments=comments)
+    try:
+        predictions_count = len(list(predictions.find())) if predictions else 0
+        comments = get_site_comments()
+        return render_template('index.html', 
+                             predictions_count=predictions_count,
+                             is_authenticated=is_authenticated(),
+                             comments=comments)
+    except Exception as e:
+        app.logger.error(f"Erreur lors de l'accès à la page d'accueil: {str(e)}")
+        return render_template('index.html',
+                             predictions_count=0,
+                             is_authenticated=is_authenticated(),
+                             comments=[])
 
 @app.route('/register', methods=['POST'])
 def register():
