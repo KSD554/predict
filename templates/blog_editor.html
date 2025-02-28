@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if post %}Modifier l'article{% else %}Nouvel article{% endif %} - MediPredict</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Remplacer le CDN Tailwind par une version de production -->
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- Ajout de TinyMCE pour un éditeur de texte riche -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- TinyMCE avec une clé API gratuite -->
+    <script src="https://cdn.tiny.cloud/1/qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
         tinymce.init({
             selector: '#content',
@@ -17,6 +19,7 @@
             menubar: false,
             statusbar: false,
             content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5; }',
+            readonly: false
         });
     </script>
 </head>
