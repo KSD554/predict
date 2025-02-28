@@ -130,19 +130,25 @@
         .form-input {
             @apply w-full px-6 py-4 text-lg rounded-xl border-2 focus:ring-2 transition-all duration-300 bg-white;
             @apply placeholder-gray-400 text-gray-700;
-            @apply shadow-sm hover:shadow-md;
+            @apply shadow-md hover:shadow-lg;
+            @apply mb-2;
+            border-width: 2px;
+            min-height: 3.5rem;
         }
         
         .form-input-diabetes {
-            @apply border-blue-200 focus:border-blue-500 focus:ring-blue-200 hover:border-blue-300;
+            @apply border-blue-300 focus:border-blue-500 focus:ring-blue-200 hover:border-blue-400;
+            background-color: rgba(239, 246, 255, 0.5);
         }
         
         .form-input-hypertension {
-            @apply border-red-200 focus:border-red-500 focus:ring-red-200 hover:border-red-300;
+            @apply border-red-300 focus:border-red-500 focus:ring-red-200 hover:border-red-400;
+            background-color: rgba(254, 242, 242, 0.5);
         }
         
         .form-input-cardio {
-            @apply border-purple-200 focus:border-purple-500 focus:ring-purple-200 hover:border-purple-300;
+            @apply border-purple-300 focus:border-purple-500 focus:ring-purple-200 hover:border-purple-400;
+            background-color: rgba(245, 243, 255, 0.5);
         }
         
         .prediction-button {
@@ -164,28 +170,30 @@
         }
         
         .form-group {
-            @apply transform transition-all duration-200 p-8 rounded-xl bg-white shadow-sm hover:shadow-md;
+            @apply transform transition-all duration-200 p-6 rounded-xl bg-white shadow-md hover:shadow-lg;
             @apply mb-6;
+            border: 1px solid #e5e7eb;
         }
         
         .form-label {
-            @apply block text-gray-700 font-semibold mb-4 flex items-center space-x-4 text-xl;
+            @apply block text-gray-700 font-semibold mb-3 flex items-center space-x-4 text-xl;
             @apply transition-colors duration-200;
         }
         
         .form-icon {
-            @apply w-8 h-8 opacity-80;
+            @apply w-8 h-8 opacity-90;
         }
 
         /* Messages d'erreur */
         .error-message {
-            @apply mt-3 text-sm text-red-600 font-medium;
+            @apply mt-2 text-sm text-red-600 font-medium;
         }
 
         /* Responsive Design amélioré */
         @media (max-width: 640px) {
             .form-input {
-                @apply px-4 py-3.5 text-base;
+                @apply px-4 py-3 text-base;
+                min-height: 3rem;
             }
             
             .form-group {
@@ -193,7 +201,7 @@
             }
             
             .form-label {
-                @apply text-lg mb-3;
+                @apply text-lg mb-2;
             }
             
             .form-icon {
@@ -902,8 +910,8 @@
                         isMobileMenuOpen: false,
                         showLoginModal: false,
                         showRegisterModal: false,
-                        isAuthenticated: {{ 'true' if is_authenticated else 'false' }},
-                        userName: '{{ session.user_name if session.user_name else "" }}',
+                        isAuthenticated: JSON.parse('{{ is_authenticated|tojson }}'),
+                        userName: '{{ session.get("user_name", "") }}',
                         loginForm: {
                             email: '',
                             password: ''
@@ -963,19 +971,19 @@
                     }
                 },
                 mounted() {
-                    this.loadHistory()
-                    this.loadStatistics()
+                    this.loadHistory();
+                    this.loadStatistics();
                 },
                 methods: {
-                    showNotification(message, type = 'success') {
+                    showNotification: function(message, type = 'success') {
                         this.notification = {
                             show: true,
                             type: type,
                             message: message
-                        }
+                        };
                         setTimeout(() => {
-                            this.notification.show = false
-                        }, 5000)
+                            this.notification.show = false;
+                        }, 5000);
                     },
                     async loadHistory() {
                         try {
@@ -1010,14 +1018,35 @@
                             return;
                         }
 
+                        const formData = this.formData[diseaseType];
+                        let isValid = true;
+
+                        // Validation spécifique pour chaque type de prédiction
+                        switch (diseaseType) {
+                            case 'diabetes':
+                                isValid = this.validateField(diseaseType, 'glucose', formData.glucose, 70, 400) &&
+                                         this.validateField(diseaseType, 'age', formData.age, 18, 120) &&
+                                         this.validateField(diseaseType, 'bmi', formData.bmi, 15, 50);
+                                break;
+                            case 'hypertension':
+                                isValid = this.validateField(diseaseType, 'systolic', formData.systolic, 90, 200) &&
+                                         this.validateField(diseaseType, 'diastolic', formData.diastolic, 60, 120) &&
+                                         this.validateField(diseaseType, 'age', formData.age, 18, 120);
+                                break;
+                            case 'cardiovascular':
+                                isValid = this.validateField(diseaseType, 'heart_rate', formData.heart_rate, 40, 120) &&
+                                         this.validateField(diseaseType, 'cholesterol', formData.cholesterol, 100, 300) &&
+                                         this.validateField(diseaseType, 'age', formData.age, 18, 120);
+                                break;
+                        }
+
+                        if (!isValid) {
+                            this.showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
+                            return;
+                        }
+
                         try {
                             this.isLoading = true;
-                            const formData = this.formData[diseaseType];
-                            
-                            if (Object.values(formData).some(value => value === '')) {
-                                throw new Error('Veuillez remplir tous les champs');
-                            }
-
                             const input_data = Object.fromEntries(
                                 Object.entries(formData).map(([key, value]) => [key, parseFloat(value)])
                             );
@@ -1247,14 +1276,16 @@
                             this.showNotification('Erreur lors de la suppression du commentaire', 'error');
                         }
                     },
-                    validateField(disease, field, value, min, max) {
-                        if (value < min || value > max) {
-                            this.formErrors[disease][field] = `Veuillez entrer une valeur entre ${min} et ${max}`;
-                        } else {
-                            this.formErrors[disease][field] = '';
+                    validateField: function(disease, field, value, min, max) {
+                        value = parseFloat(value);
+                        if (isNaN(value) || value < min || value > max) {
+                            this.formErrors[disease][field] = `La valeur doit être comprise entre ${min} et ${max}`;
+                            return false;
                         }
+                        this.formErrors[disease][field] = '';
+                        return true;
                     },
-                    hasErrors(disease) {
+                    hasErrors: function(disease) {
                         return Object.values(this.formErrors[disease]).some(error => error !== '');
                     }
                 }
