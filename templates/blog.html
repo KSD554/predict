@@ -55,13 +55,13 @@
                     </div>
 
                     <!-- Bouton Menu Mobile -->
-                    <button id="menuButton" class="md:hidden text-gray-600 hover:text-blue-600 focus:outline-none">
+                    <button @click="toggleMobileMenu" class="md:hidden text-gray-600 hover:text-blue-600 focus:outline-none">
                         <i class="fas fa-bars text-2xl"></i>
                     </button>
                 </div>
 
                 <!-- Menu Mobile -->
-                <div id="mobileMenu" class="hidden md:hidden mt-4 py-2 space-y-4">
+                <div v-show="isMobileMenuOpen" class="md:hidden mt-4 py-2 space-y-4">
                     <a href="{{ url_for('index') }}" class="block text-gray-600 hover:text-blue-600 transition py-2">Accueil</a>
                     <a href="{{ url_for('blog') }}" class="block text-gray-600 hover:text-blue-600 transition py-2">Blog</a>
                     {% if is_authenticated %}
@@ -318,28 +318,6 @@
     </div>
 
     <script>
-    // Gestion du menu mobile
-    const menuButton = document.getElementById('menuButton');
-    const mobileMenu = document.getElementById('mobileMenu');
-
-    menuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-    });
-
-    // Fermer le menu mobile lors du clic sur un lien
-    mobileMenu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-        });
-    });
-
-    // Fermer le menu mobile lors du redimensionnement de la fenêtre
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= 768) { // 768px est le breakpoint md de Tailwind
-            mobileMenu.classList.add('hidden');
-        }
-    });
-
     document.addEventListener('DOMContentLoaded', function() {
         const { createApp } = Vue;
         const app = createApp({
@@ -348,6 +326,7 @@
                 return {
                     showLoginModal: false,
                     showRegisterModal: false,
+                    isMobileMenuOpen: false,
                     loginForm: {
                         email: '',
                         password: ''
@@ -364,7 +343,23 @@
                     }
                 }
             },
+            mounted() {
+                // Fermer le menu mobile lors du redimensionnement
+                window.addEventListener('resize', this.handleResize);
+            },
+            beforeUnmount() {
+                // Nettoyage de l'event listener
+                window.removeEventListener('resize', this.handleResize);
+            },
             methods: {
+                toggleMobileMenu() {
+                    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+                },
+                handleResize() {
+                    if (window.innerWidth >= 768) {
+                        this.isMobileMenuOpen = false;
+                    }
+                },
                 showNotification(message, type = 'success') {
                     this.notification = {
                         show: true,
