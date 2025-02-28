@@ -15,12 +15,15 @@
         <header class="bg-white shadow-sm">
             <nav class="container mx-auto px-4 sm:px-6 py-4">
                 <div class="flex justify-between items-center">
+                    <!-- Logo -->
                     <div class="flex items-center">
                         <a href="{{ url_for('index') }}" class="flex items-center">
                             <i class="fas fa-heartbeat text-red-600 text-2xl mr-2"></i>
                             <span class="text-xl font-bold text-gray-800">MediPredict</span>
                         </a>
                     </div>
+
+                    <!-- Menu Desktop -->
                     <div class="hidden md:flex items-center space-x-8">
                         <a href="{{ url_for('index') }}" class="text-gray-600 hover:text-blue-600 transition">Accueil</a>
                         <a href="{{ url_for('blog') }}" class="text-gray-600 hover:text-blue-600 transition">Blog</a>
@@ -31,6 +34,23 @@
                         <a href="{{ url_for('login') }}" class="text-blue-600 hover:text-blue-800">Connexion</a>
                         {% endif %}
                     </div>
+
+                    <!-- Bouton Menu Mobile -->
+                    <button id="menuButton" class="md:hidden text-gray-600 hover:text-blue-600 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Menu Mobile -->
+                <div id="mobileMenu" class="hidden md:hidden mt-4 py-2 space-y-4">
+                    <a href="{{ url_for('index') }}" class="block text-gray-600 hover:text-blue-600 transition py-2">Accueil</a>
+                    <a href="{{ url_for('blog') }}" class="block text-gray-600 hover:text-blue-600 transition py-2">Blog</a>
+                    {% if is_authenticated %}
+                    <span class="block text-gray-600 py-2">{{ session.user_name }}</span>
+                    <a href="{{ url_for('logout') }}" class="block text-red-600 hover:text-red-800 py-2">Déconnexion</a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="block text-blue-600 hover:text-blue-800 py-2">Connexion</a>
+                    {% endif %}
                 </div>
             </nav>
         </header>
@@ -127,8 +147,21 @@
         </main>
 
         <footer class="bg-gray-800 text-white py-8 mt-12">
-            <div class="container mx-auto px-4 text-center">
-                <p>&copy; 2024 MediPredict. Tous droits réservés.</p>
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-center md:text-left mb-4 md:mb-0">
+                        <p>&copy; 2024 MediPredict. Tous droits réservés.</p>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8">
+                        <a href="{{ url_for('index') }}" class="text-gray-300 hover:text-white transition">Accueil</a>
+                        <a href="{{ url_for('blog') }}" class="text-gray-300 hover:text-white transition">Blog</a>
+                        {% if is_authenticated %}
+                        <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 transition">Déconnexion</a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300 transition">Connexion</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </footer>
     </div>
@@ -262,6 +295,28 @@
             alert('Une erreur est survenue lors de la publication');
             submitButton.disabled = false;
             submitButton.innerHTML = originalText;
+        }
+    });
+
+    // Gestion du menu mobile
+    const menuButton = document.getElementById('menuButton');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    menuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Fermer le menu mobile lors du clic sur un lien
+    mobileMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+        });
+    });
+
+    // Fermer le menu mobile lors du redimensionnement de la fenêtre
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) { // 768px est le breakpoint md de Tailwind
+            mobileMenu.classList.add('hidden');
         }
     });
     </script>
