@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediPredict | Système de Prédiction Médicale</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -550,8 +550,8 @@
                     isMobileMenuOpen: false,
                     showLoginModal: false,
                     showRegisterModal: false,
-                    isAuthenticated: '{{ is_authenticated }}' === 'true',
-                    userName: '{{ user_name }}',
+                    isAuthenticated: {{ 'true' if is_authenticated else 'false' }},
+                    userName: '{{ session.user_name if session.user_name else "" }}',
                     loginForm: {
                         email: '',
                         password: ''
@@ -791,13 +791,21 @@
                 },
                 async login() {
                     try {
-                        const response = await axios.post('/login', this.loginForm);
-                        if (response.data.success) {
-                            this.showNotification(response.data.message, 'success');
+                        const response = await fetch('/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.loginForm)
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.showNotification(data.message, 'success');
                             this.showLoginModal = false;
                             window.location.reload();
                         } else {
-                            this.showNotification(response.data.message, 'error');
+                            this.showNotification(data.message, 'error');
                         }
                     } catch (error) {
                         this.showNotification('Erreur lors de la connexion', 'error');
@@ -805,17 +813,21 @@
                 },
                 async register() {
                     try {
-                        const response = await axios.post('/register', this.registerForm);
-                        if (response.data.success) {
-                            this.showNotification(response.data.message, 'success');
+                        const response = await fetch('/register', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.registerForm)
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.showNotification(data.message, 'success');
+                            this.showLoginModal = true;
                             this.showRegisterModal = false;
-                            // Préparer les données de connexion
-                            this.loginForm.email = this.registerForm.email;
-                            this.loginForm.password = this.registerForm.password;
-                            // Connecter automatiquement
-                            await this.login();
                         } else {
-                            this.showNotification(response.data.message, 'error');
+                            this.showNotification(data.message, 'error');
                         }
                     } catch (error) {
                         console.error('Erreur:', error);
@@ -824,6 +836,64 @@
                 }
             }
         }).mount('#app')
+
+        // Gestion des commentaires
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentForm = document.getElementById('commentForm');
+            if (commentForm) {
+                commentForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const commentContent = document.getElementById('comment').value;
+                    if (!commentContent.trim()) {
+                        alert('Le commentaire ne peut pas être vide');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch('/add_site_comment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                content: commentContent
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert(data.message || 'Erreur lors de l\'ajout du commentaire');
+                        }
+                    } catch (error) {
+                        alert('Erreur lors de l\'ajout du commentaire');
+                    }
+                });
+            }
+        });
+
+        function deleteComment(commentId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+                return;
+            }
+            
+            fetch(`/delete_site_comment/${commentId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Erreur lors de la suppression du commentaire');
+                }
+            })
+            .catch(error => {
+                alert('Erreur lors de la suppression du commentaire');
+            });
+        }
     </script>
 </body>
 </html>
