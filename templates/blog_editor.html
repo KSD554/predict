@@ -4,33 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if post %}Modifier l'article{% else %}Nouvel article{% endif %} - MediPredict</title>
-    <!-- Remplacer le CDN Tailwind par une version de production -->
-    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Utilisation de Tailwind via CDN pour le développement uniquement -->
+    <link href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.x/dist/typography.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- TinyMCE sans clé API -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
-    <script>
-        window.addEventListener('DOMContentLoaded', (event) => {
-            tinymce.init({
-                selector: '#content',
-                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount',
-                toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-                height: 500,
-                menubar: true,
-                branding: false,
-                promotion: false,
-                forced_root_block: 'p',
-                verify_html: false,
-                readonly: 0,
-                setup: function (editor) {
-                    editor.on('init', function () {
-                        editor.setMode('design');
-                    });
-                }
-            });
-        });
-    </script>
 </head>
 <body class="bg-gray-50">
     <div id="app" class="min-h-screen">
@@ -109,9 +86,11 @@
                         <div class="space-y-2">
                             <label for="content" class="block text-sm font-medium text-gray-700">Contenu de l'article</label>
                             <textarea id="content"
-                                      name="content"
-                                      class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                      required>{{ post.content if post else '' }}</textarea>
+                                    name="content"
+                                    class="w-full h-96 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                    placeholder="Rédigez votre article ici..."
+                                    required>{{ post.content if post else '' }}</textarea>
+                            <p class="text-sm text-gray-500">Vous pouvez utiliser le format Markdown pour la mise en forme.</p>
                         </div>
 
                         <!-- Tags -->
@@ -233,7 +212,7 @@
         
         const formData = {
             title: document.getElementById('title').value,
-            content: tinymce.get('content').getContent(),
+            content: document.getElementById('content').value,
             image: base64Image,
             tags: document.getElementById('tags').value
                 .split(',')
@@ -247,55 +226,30 @@
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement en cours...';
         
-        {% if post %}
-        // Mode édition
-        fetch('{{ url_for("edit_post", post_id=post._id) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = '{{ url_for("view_post", post_id=post._id) }}';
+        try {
+            const response = await fetch('{{ url_for("new_post") if not post else url_for("edit_post", post_id=post._id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                window.location.href = '{{ url_for("blog") }}';
             } else {
-                alert('Erreur lors de la mise à jour de l\'article');
+                alert('Une erreur est survenue lors de la publication');
                 submitButton.disabled = false;
-                submitButton.textContent = originalText;
+                submitButton.innerHTML = originalText;
             }
-        })
-        .catch(error => {
-            alert('Erreur lors de la mise à jour de l\'article');
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la publication');
             submitButton.disabled = false;
-            submitButton.textContent = originalText;
-        });
-        {% else %}
-        // Mode création
-        fetch('{{ url_for("new_post") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = `/blog/post/${data.post_id}`;
-            } else {
-                alert('Erreur lors de la création de l\'article');
-                submitButton.disabled = false;
-                submitButton.textContent = originalText;
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de la création de l\'article');
-            submitButton.disabled = false;
-            submitButton.textContent = originalText;
-        });
-        {% endif %}
+            submitButton.innerHTML = originalText;
+        }
     });
     </script>
 </body>
