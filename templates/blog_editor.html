@@ -64,7 +64,7 @@
 
                         <!-- Image Upload -->
                         <div class="space-y-2">
-                            <label for="image" class="block text-sm font-medium text-gray-700">Image de couverture</label>
+                            <label for="image" class="block text-sm font-medium text-gray-700">Image de couverture (optionnelle)</label>
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-500 transition-colors">
                                 <div class="space-y-2 text-center">
                                     <div class="image-preview-container mb-4 hidden">
@@ -73,7 +73,7 @@
                                     <div class="flex text-sm text-gray-600">
                                         <label for="image-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                             <span>Télécharger une image</span>
-                                            <input id="image-upload" name="image" type="file" class="sr-only" accept="image/*" required>
+                                            <input id="image-upload" name="image" type="file" class="sr-only" accept="image/*">
                                         </label>
                                         <p class="pl-1">ou glissez et déposez</p>
                                     </div>
@@ -197,28 +197,41 @@
     document.getElementById('postForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const imageFile = document.getElementById('image-upload').files[0];
-        if (!imageFile) {
-            alert('Veuillez sélectionner une image de couverture');
-            return;
-        }
-
-        // Convertir l'image en base64
-        const base64Image = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(imageFile);
-        });
-        
         const formData = {
-            title: document.getElementById('title').value,
-            content: document.getElementById('content').value,
-            image: base64Image,
+            title: document.getElementById('title').value.trim(),
+            content: document.getElementById('content').value.trim(),
             tags: document.getElementById('tags').value
                 .split(',')
                 .map(tag => tag.trim())
                 .filter(tag => tag)
         };
+
+        // Vérification des champs obligatoires
+        if (!formData.title) {
+            alert('Le titre est obligatoire');
+            return;
+        }
+        if (!formData.content) {
+            alert('Le contenu est obligatoire');
+            return;
+        }
+
+        // Ajouter l'image si elle existe
+        const imageFile = document.getElementById('image-upload').files[0];
+        if (imageFile) {
+            try {
+                const base64Image = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(imageFile);
+                });
+                formData.image = base64Image;
+            } catch (error) {
+                console.error('Erreur lors de la conversion de l\'image:', error);
+                alert('Erreur lors du traitement de l\'image');
+                return;
+            }
+        }
 
         // Afficher un indicateur de chargement
         const submitButton = this.querySelector('button[type="submit"]');
@@ -240,7 +253,7 @@
             if (result.success) {
                 window.location.href = '{{ url_for("blog") }}';
             } else {
-                alert('Une erreur est survenue lors de la publication');
+                alert(result.message || 'Une erreur est survenue lors de la publication');
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
             }
